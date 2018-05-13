@@ -16,7 +16,7 @@ CBGStars::CBGStars()
 
 		_fStT[i][0] = -HALF_SCREEN_X + (rand() % (HALF_SCREEN_X*2) + (rand() % 10)*0.1);	//x座標
 		_fStT[i][1] = -HALF_SCREEN_Y + (rand() % (HALF_SCREEN_Y*2) + (rand() % 10)*0.1);	//y座標
-		_fStT[i][2] = -5;										//z座標
+		_fStT[i][2] = -5;																	//z座標
 		_mxStT = Translate(_fStT[i][0], _fStT[i][1], _fStT[i][2]);
 		_fStarScale = 0.1f;	//縮放
 		_mxStS = Scale(_fStarScale, _fStarScale, _fStarScale);

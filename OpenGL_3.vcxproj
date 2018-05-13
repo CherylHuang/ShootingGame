@@ -88,6 +88,7 @@
     <ClCompile Include="Common\CEnemy.cpp" />
     <ClCompile Include="Common\CFirstBoss.cpp" />
     <ClCompile Include="Common\CLineSegment.cpp" />
+    <ClCompile Include="Common\CLittleEnemy.cpp" />
     <ClCompile Include="Common\CObjReader.cpp" />
     <ClCompile Include="Common\CPlayer.cpp" />
     <ClCompile Include="Common\CSecondBoss.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="Common\CEnemy.h" />
     <ClInclude Include="Common\CFirstBoss.h" />
     <ClInclude Include="Common\CLineSegment.h" />
+    <ClInclude Include="Common\CLittleEnemy.h" />
     <ClInclude Include="Common\CObjReader.h" />
     <ClInclude Include="Common\CPlayer.h" />
     <ClInclude Include="Common\CSecondBoss.h" />

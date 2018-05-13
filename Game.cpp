@@ -10,6 +10,7 @@
 #include "Common/CFirstBoss.h"
 #include "Common/CSecondBoss.h"
 #include "Common/CThirdBoss.h"
+//#include "Common/CLittleEnemy.h" ///////////////////////
 
 #define SPACE_KEY 32
 #define SCREEN_SIZE_X 500
@@ -31,10 +32,12 @@ CPlayer *g_pPlayer;
 CFirstBoss *g_pFirstBoss;
 CSecondBoss *g_pSecondBoss;
 CThirdBoss *g_pThirdBoss;
+//CLittleEnemy *g_pLittleEnemy;/////////////////////////////
 
 // For Counting
 float g_fcount = 0;
 float g_fcount_boss1 = 0;
+float g_fcount_boss3 = 0;
 
 // PassiveMotion
 float g_fPTx;		//玩家移動x軸
@@ -71,7 +74,7 @@ void init( void )
 	g_pFirstBoss = new CFirstBoss;				//BOSS1
 	g_pSecondBoss = new CSecondBoss;			//BOSS2
 	g_pThirdBoss = new CThirdBoss;				//BOSS3
-
+	//g_pLittleEnemy = new CLittleEnemy;/////////////////////////////
 }
 
 void AutomaticRotation(float delta){
@@ -99,9 +102,10 @@ void GL_Display( void )
 
 	g_pStars->GL_Draw();
 	g_pPlayer->GL_Draw();
-	g_pFirstBoss->GL_Draw();
+	//g_pFirstBoss->GL_Draw();
 	//g_pSecondBoss->GL_Draw();
-	//g_pThirdBoss->GL_Draw();
+	g_pThirdBoss->GL_Draw();
+	//g_pLittleEnemy->GL_Draw();//////////////////////////////////
 
 	glutSwapBuffers();	// 交換 Frame Buffer
 }
@@ -128,13 +132,22 @@ void onFrameMove(float delta)
 		g_pFirstBoss->NextBullet();	//下一個子彈
 		g_fcount_boss1 -= NEXT_BULLET_DELAY;
 	}
+	//BOSS3 + Little 子彈
+	g_fcount_boss3 += delta;
+	g_pThirdBoss->SetBulletPassiveMove();	//未發射子彈跟隨little
+	if (g_fcount_boss3 < NEXT_BULLET_DELAY) g_pThirdBoss->ShootBullet(delta);	//發射子彈
+	else {
+		g_pThirdBoss->NextBullet();	//下一個子彈
+		g_fcount_boss3 -= NEXT_BULLET_DELAY;
+	}
 	//----------------------------
 
 	//物件運動更新
 	g_pStars->UpdateMatrix(delta);							//背景
 	g_pFirstBoss->UpdateMatrix(delta);						//BOSS1
-	if (m_bAutoMove) g_pSecondBoss->UpdateMatrix(delta);	//BOSS2 子物件運動
+	g_pSecondBoss->UpdateMatrix(delta);						//BOSS2 子物件運動
 	g_pThirdBoss->UpdateMatrix(delta);						//BOSS3
+	//g_pLittleEnemy->UpdateMatrix(delta);////////////////////////////
 
 	//----------------------------
 	// 由上層更新所有要被繪製物件的 View 與 Projection Matrix
@@ -145,6 +158,7 @@ void onFrameMove(float delta)
 		g_pFirstBoss->SetViewMatrix(mvx);
 		g_pSecondBoss->SetViewMatrix(mvx);
 		g_pThirdBoss->SetViewMatrix(mvx);
+		//g_pLittleEnemy->SetViewMatrix(mvx);/////////////////
 	}
 	mpx = camera->getProjectionMatrix(bPDirty);
 	if (bPDirty) { // 更新所有物件的 View Matrix
@@ -153,6 +167,7 @@ void onFrameMove(float delta)
 		g_pFirstBoss->SetProjectionMatrix(mpx);
 		g_pSecondBoss->SetProjectionMatrix(mpx);
 		g_pThirdBoss->SetProjectionMatrix(mpx);
+		//g_pLittleEnemy->SetProjectionMatrix(mpx);//////////////////////////
 	}
 
 	GL_Display();
@@ -195,6 +210,7 @@ void Win_Keyboard( unsigned char key, int x, int y )
 		delete g_pFirstBoss;	//BOSS1
 		delete g_pSecondBoss;	//BOSS2
 		delete g_pThirdBoss;	//BOSS3
+		//delete g_pLittleEnemy;/////////////////////////////
 		camera->destroyInstance();
 
         exit( EXIT_SUCCESS );

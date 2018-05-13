@@ -51,6 +51,8 @@ void CPlayer::GL_Draw()
 void CPlayer::GL_SetTRSMatrix(mat4 &mat)
 {
 	_mxPT = mat;
+	_fPT[0] = _mxPT._m[0][3];
+	_fPT[1] = _mxPT._m[1][3];
 	_pPlayer->SetTRSMatrix(mat);
 }
 

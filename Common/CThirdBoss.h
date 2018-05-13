@@ -4,17 +4,28 @@
 #include "CCamera.h"
 #include "CObjReader.h"
 #include "CEnemy.h"
+#include "CBullet.h"
+#include "CLittleEnemy.h"
+
+#define LITTLE_NUM 4	//┣计秖
+#define BOSS_Y 4.7f		//BOSS1 y axis
+#define BULLET_NUM 10	//紆计秖
+#define HALF_SCREEN_X 5
+#define HALF_SCREEN_Y 7
 
 class CThirdBoss : public CEnemy
 {
 protected:
 	// For Objects
-	CObjReader *_pWheel[2];		//近  ン
+	CObjReader *_pWheel[2];						//近  ン
+	CLittleEnemy *_pLittleEnemy[LITTLE_NUM];	//┣
 
 	// For TRS
-	GLfloat _fWAngle = 0;		//近锣à
-	float _fWT[3] = { 0 };		//近簿
-	mat4 _mxWT[2];
+	GLfloat _fWAngle = 0;					//近锣à
+	float _fWT[3] = { 0 };					//近簿
+	mat4 _mxWT[2];							// for wheel translation
+	float _fLT[LITTLE_NUM][3] = { 0 };		//┣簿
+	mat4 _mxLT[LITTLE_NUM];					// for little enemy translation
 
 public:
 	CThirdBoss();
@@ -25,5 +36,10 @@ public:
 	void SetViewMatrix(mat4);
 	void SetProjectionMatrix(mat4);
 
+	void CreateBulletList();					//ミ紆﹃
+	void DeleteBulletList();					//埃紆﹃
+	void ShootBullet(float delta);				//祇甮紆
+	void NextBullet();							//聋紆
+	void SetBulletPassiveMove();				//紆ゼ祇甮 蛤繦à︹
 };
 #endif

@@ -4,11 +4,14 @@
 #include "CCamera.h"
 #include "CObjReader.h"
 #include "CEnemy.h"
+#include "CBullet.h"
 
-#define BIG_WHEEL_NUM 5		//近  ン
-#define SMALL_WHEEL_NUM 5	//近  ン
+#define BIG_WHEEL_NUM 7		//近  ン
+#define SMALL_WHEEL_NUM 7	//近  ン
 #define BW_RADIUS 2.7f		//近  禯瞒畖
 #define SW_RADIUS 0.5f		//近  禯瞒畖
+#define BOSS_Y 2			//BOSS1 y axis
+#define BULLET_NUM 10		//紆计秖
 
 class CSecondBoss : public CEnemy
 {
@@ -25,6 +28,9 @@ protected:
 	GLfloat _fBWAngle = 0;			//近锣à
 	GLfloat _fSWAngle = 0;			//近锣à
 
+	// bullet
+	//CBullet *_bullet[BULLET_NUM];
+
 public:
 
 	CSecondBoss();
@@ -34,6 +40,12 @@ public:
 	void GL_Draw();
 	void SetViewMatrix(mat4);
 	void SetProjectionMatrix(mat4);
+
+	void CreateBulletList();					//ミ紆﹃
+	void DeleteBulletList();					//埃紆﹃
+	void ShootBullet(float delta);				//祇甮紆
+	void NextBullet();							//聋紆
+	void SetBulletPassiveMove();				//紆ゼ祇甮 蛤繦à︹
 
 };
 #endif

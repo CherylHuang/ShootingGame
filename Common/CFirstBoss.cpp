@@ -6,7 +6,7 @@ CFirstBoss::CFirstBoss()
 	_pMainBody = new CObjReader("obj/cyberpunk1.obj");
 	_pMainBody->SetColor(vec4(-1.0f, 0.0f, 0.0f, 1));
 	_pMainBody->SetShader();
-	_fMT[1] = 5;				//y座標
+	_fMT[1] = BOSS_Y;				//y座標
 	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]);
 	_pMainBody->SetTRSMatrix(_mxMT);
 
@@ -24,9 +24,43 @@ CFirstBoss::~CFirstBoss()
 }
 
 //----------------------------------------------
-void CFirstBoss::UpdateMatrix(float)
+void CFirstBoss::UpdateMatrix(float delta)
 {
+	float speed = 3.5f;	//大輪速度
+	_fMAngle_Track += speed * delta;
+	if (_fMAngle_Track > 360) _fMAngle_Track -= 360; //歸零
 
+	float sint, cost, sin2t, cos2t, cos3t, cos4t, sin12t, cost2, sin5t2; //---------定義----------
+	sint = sinf(_fMAngle_Track);			sin2t = sinf(2 * _fMAngle_Track);
+	cost = cosf(_fMAngle_Track);			cos2t = cosf(2 * _fMAngle_Track);
+	cos3t = cosf(3 * _fMAngle_Track);		cos4t = cosf(4 * _fMAngle_Track);
+	cost2 = cosf(_fMAngle_Track / 2.f);		sin5t2 = sinf(5 * _fMAngle_Track / 2.f);
+	float fsize = 1.0f;
+	_fMT[0] = (cost * 3 * cost2)*fsize;				//x
+	_fMT[1] = (sint * 3 * cost2)*fsize + BOSS_Y;	//y
+	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]);	//路徑移動
+
+	//HEART
+	//x = 16 * sint*sint*sint
+	//y = 13 * cost - 5 * cos2t - 2 * cos3t - cos4t
+	//FLOWER
+	//x = 15 * cost * sin2t  (15 : scale)
+	//y = 15 * sint * sin2t
+	//BUTTERFLY
+	//x = sint*(expf(cost) - 2 * cos4t - powf(sin12t, 5))
+	//y = cost*(expf(cost) - 2 * cos4t - powf(sin12t, 5))
+	//INFINITY
+	//x = cost * sqrt(9 * cos2t)
+	//y = sint * sqrt(9 * cos2t)
+	//UNTITLED 1
+	//x = cost * 3 * cost2
+	//y = sint * 3 * cost2
+	//UNTITLED 2
+	//x = cost * sint * sin5t2
+	//y = sint * sint * sin5t2
+
+	//物件
+	_pMainBody->SetTRSMatrix(_mxMT);
 }
 void CFirstBoss::GL_Draw()
 {

@@ -6,7 +6,7 @@ CSecondBoss::CSecondBoss()
 	_pMainBody = new CObjReader("obj/cyberpunk2.obj");
 	_pMainBody->SetColor(vec4(0.0f, -1.0f, 0.0f, 1));
 	_pMainBody->SetShader();
-	_fMT[1] = 3;	//y座標
+	_fMT[1] = BOSS_Y;	//y座標
 	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]); // 0
 	_pMainBody->SetTRSMatrix(_mxMT);
 
@@ -50,12 +50,15 @@ void CSecondBoss::UpdateMatrix(float delta)
 	_fBWAngle_Track += speed * delta;
 	if (_fBWAngle_Track > 360) _fBWAngle_Track -= 360; //歸零
 
-	float sint, cost, sin2t, cos2t, cos3t, cos4t, sin12t; //---------定義----------
-	sint = sinf(_fBWAngle_Track); sin2t = sinf(2 * _fBWAngle_Track);
-	cost = cosf(_fBWAngle_Track); cos2t = cosf(2 * _fBWAngle_Track);
-	cos3t = cosf(3 * _fBWAngle_Track); cos4t = cosf(4 * _fBWAngle_Track);
+	float sint, cost, sin2t, cos2t, cos3t, cos4t, sin12t, sin5t2, cos9t2; //---------定義----------
+	sint = sinf(_fBWAngle_Track);				sin2t = sinf(2 * _fBWAngle_Track);
+	cost = cosf(_fBWAngle_Track);				cos2t = cosf(2 * _fBWAngle_Track);
+	cos3t = cosf(3 * _fBWAngle_Track);			cos4t = cosf(4 * _fBWAngle_Track);
+	sin5t2 = sinf(5 * _fBWAngle_Track / 2.f);	cos9t2 = cosf(9 * _fBWAngle_Track / 2.f);
 	float fsize = 0.05f;
-	_mxBWTt = Translate((13 * sint * sin2t)*fsize, (13 * cost * sin2t)*fsize, 0); //路徑移動
+	_mxBWTt = Translate((13 * sint * sin2t)*fsize, (13 * cost * sin2t)*fsize, 0);	//大輪路徑移動
+	_fMT[0] = cost * (sint + sin5t2); _fMT[1] = sint * (sint + sin5t2) + BOSS_Y;						//BOSS BODY MOVE
+	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]);
 
 	//HEART
 	//x = 16 * sint*sint*sint
@@ -66,6 +69,9 @@ void CSecondBoss::UpdateMatrix(float delta)
 	//BUTTERFLY
 	//x = sint*(expf(cost) - 2 * cos4t - powf(sin12t, 5))
 	//y = cost*(expf(cost) - 2 * cos4t - powf(sin12t, 5))
+	//UNTITLED 2
+	//x = cost * sint * sin5t2
+	//y = sint * sint * sin5t2
 
 	//父物件
 	_pMainBody->SetTRSMatrix(_mxMT);
@@ -107,4 +113,26 @@ void CSecondBoss::SetProjectionMatrix(mat4 mpx)
 	_pMainBody->SetProjectionMatrix(mpx);
 	for (int i = 0; i < BIG_WHEEL_NUM; i++) _pWheel[i]->SetProjectionMatrix(mpx);
 	for (int i = 0; i < SMALL_WHEEL_NUM; i++) _pSWheel[i]->SetProjectionMatrix(mpx);
+}
+
+//-----------------------------------------------------------------
+void CSecondBoss::CreateBulletList()
+{
+
+}
+void CSecondBoss::DeleteBulletList()
+{
+
+}
+void CSecondBoss::ShootBullet(float delta)
+{
+
+}
+void CSecondBoss::NextBullet()
+{
+
+}
+void CSecondBoss::SetBulletPassiveMove()
+{
+
 }
