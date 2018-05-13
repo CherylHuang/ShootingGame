@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="原始程式檔">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="標頭檔">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="資源檔">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{437fab22-00a9-4f33-801d-c89cbfe4f115}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="原始程式檔\shader">
+      <UniqueIdentifier>{d7a8b596-d3d2-4d6f-872d-311fc640ee66}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Common\CQuad.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CSolidCube.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CWireCube.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Timer.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="InitShader.cpp">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CSolidSphere.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\common.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CWireSphere.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CShape.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CLineSegment.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CCamera.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\C2DSprite.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\MyArcBall.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CObjReader.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CEnemy.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CSecondBoss.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CPlayer.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CBullet.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CBGStars.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CFirstBoss.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\CThirdBoss.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common\CQuad.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CSolidCube.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CWireCube.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Timer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CSolidSphere.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CWireSphere.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CShape.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CLineSegment.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CCamera.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\C2DSprite.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\MyArcBall.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CObjReader.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CEnemy.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CSecondBoss.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CPlayer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CBullet.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CBGStars.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CFirstBoss.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CThirdBoss.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fsVtxColor.glsl">
+      <Filter>原始程式檔\shader</Filter>
+    </None>
+    <None Include="fsVtxNormal.glsl">
+      <Filter>原始程式檔\shader</Filter>
+    </None>
+    <None Include="vsVtxColor.glsl">
+      <Filter>原始程式檔\shader</Filter>
+    </None>
+    <None Include="vsVtxNormal.glsl">
+      <Filter>原始程式檔\shader</Filter>
+    </None>
+    <None Include="vsVtxColorPlayer.glsl">
+      <Filter>原始程式檔\shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

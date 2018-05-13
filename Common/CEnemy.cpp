@@ -1,0 +1,12 @@
+#include "CEnemy.h"
+
+CEnemy::CEnemy()
+{
+	_pMainBody = NULL;
+	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]); // 0
+}
+
+CEnemy::~CEnemy()
+{
+	if (_pMainBody != NULL) delete _pMainBody;
+}

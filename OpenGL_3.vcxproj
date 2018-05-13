@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DDC28D1A-6CC7-49E0-BFB8-8B64F798650B}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>OpenGL_3</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <LibraryPath>$(VCInstallDir)lib\GL;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>$(VCInstallDir)lib\GL;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freeglut.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>freeglut.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Common\C2DSprite.cpp" />
+    <ClCompile Include="Common\CBGStars.cpp" />
+    <ClCompile Include="Common\CBullet.cpp" />
+    <ClCompile Include="Common\CCamera.cpp" />
+    <ClCompile Include="Common\CEnemy.cpp" />
+    <ClCompile Include="Common\CFirstBoss.cpp" />
+    <ClCompile Include="Common\CLineSegment.cpp" />
+    <ClCompile Include="Common\CObjReader.cpp" />
+    <ClCompile Include="Common\CPlayer.cpp" />
+    <ClCompile Include="Common\CSecondBoss.cpp" />
+    <ClCompile Include="Common\CShape.cpp" />
+    <ClCompile Include="Common\common.cpp" />
+    <ClCompile Include="Common\CQuad.cpp" />
+    <ClCompile Include="Common\CSolidCube.cpp" />
+    <ClCompile Include="Common\CSolidSphere.cpp" />
+    <ClCompile Include="Common\CThirdBoss.cpp" />
+    <ClCompile Include="Common\CWireCube.cpp" />
+    <ClCompile Include="Common\CWireSphere.cpp" />
+    <ClCompile Include="Common\MyArcBall.cpp" />
+    <ClCompile Include="Common\Timer.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="InitShader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common\C2DSprite.h" />
+    <ClInclude Include="Common\CBGStars.h" />
+    <ClInclude Include="Common\CBullet.h" />
+    <ClInclude Include="Common\CCamera.h" />
+    <ClInclude Include="Common\CEnemy.h" />
+    <ClInclude Include="Common\CFirstBoss.h" />
+    <ClInclude Include="Common\CLineSegment.h" />
+    <ClInclude Include="Common\CObjReader.h" />
+    <ClInclude Include="Common\CPlayer.h" />
+    <ClInclude Include="Common\CSecondBoss.h" />
+    <ClInclude Include="Common\CShape.h" />
+    <ClInclude Include="Common\CQuad.h" />
+    <ClInclude Include="Common\CSolidCube.h" />
+    <ClInclude Include="Common\CSolidSphere.h" />
+    <ClInclude Include="Common\CThirdBoss.h" />
+    <ClInclude Include="Common\CWireCube.h" />
+    <ClInclude Include="Common\CWireSphere.h" />
+    <ClInclude Include="Common\MyArcBall.h" />
+    <ClInclude Include="Common\Timer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fsVtxColor.glsl" />
+    <None Include="fsVtxNormal.glsl" />
+    <None Include="vsVtxColor.glsl" />
+    <None Include="vsVtxColorPlayer.glsl" />
+    <None Include="vsVtxNormal.glsl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
