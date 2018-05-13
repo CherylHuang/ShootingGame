@@ -1,7 +1,11 @@
+#include <time.h>
 #include "CLittleEnemy.h"
 
 CLittleEnemy::CLittleEnemy()
 {
+	srand((unsigned)time(NULL));
+	_fTrackSpeed = 1.5f;
+
 	//產生Obj檔實體物件
 	_pMainBody = new CObjReader("obj/cyberpunk4.obj");
 	_pMainBody->SetColor(vec4(0.0f, 0.0f, -1.0f, 1));
@@ -107,6 +111,10 @@ void CLittleEnemy::CreateBulletList()	//建立子彈串列
 	_pBTail = _pBHead;
 	_pBHead_shoot = _pBHead;	//子彈發射用
 	_pBHead->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+
+	float fspeed = rand() % 20 + 13.f;
+	_pBHead->_fBulletSpeed = fspeed;
+
 	_iBulletNum++;	//子彈數量紀錄
 
 	//the rest of nodes
@@ -119,6 +127,7 @@ void CLittleEnemy::CreateBulletList()	//建立子彈串列
 		_pBTail->link = _pBGet;
 		_pBTail = _pBGet;
 		_pBGet->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+		_pBGet->_fBulletSpeed = fspeed;
 		_iBulletNum++;	//子彈數量紀錄
 	}
 }
@@ -137,6 +146,10 @@ void CLittleEnemy::CreateBulletList(int RandomColor)	//建立子彈串列 子彈隨機顏色
 	_pBTail = _pBHead;
 	_pBHead_shoot = _pBHead;	//子彈發射用
 	_pBHead->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+
+	float fspeed = rand() % 20 + 13.f;
+	_pBHead->_fBulletSpeed = fspeed;
+
 	_iBulletNum++;	//子彈數量紀錄
 
 					//the rest of nodes
@@ -154,6 +167,7 @@ void CLittleEnemy::CreateBulletList(int RandomColor)	//建立子彈串列 子彈隨機顏色
 		_pBTail->link = _pBGet;
 		_pBTail = _pBGet;
 		_pBGet->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+		_pBGet->_fBulletSpeed = fspeed;
 		_iBulletNum++;	//子彈數量紀錄
 	}
 }

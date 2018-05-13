@@ -112,11 +112,14 @@ void CThirdBoss::CreateBulletList()
 {
 	//first node
 	_pBHead = new CBullet(_fMT[1]);
-	_pBHead->SetBulletColor(vec4(1.0f, 0.0f, 0.0f, 1));	//RED
 	_pBHead->link = nullptr;
 	_pBTail = _pBHead;
 	_pBHead_shoot = _pBHead;	//子彈發射用
 	_pBHead->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+	
+	float fspeed = rand() % 20 + 10.f;
+	_pBHead->_fBulletSpeed = fspeed;
+
 	_iBulletNum++;	//子彈數量紀錄
 
 	//the rest of nodes
@@ -124,11 +127,11 @@ void CThirdBoss::CreateBulletList()
 		if ((_pBGet = new CBullet(_fMT[1])) == NULL) {
 			printf("記憶體不足\n"); exit(0);
 		}
-		_pBGet->SetBulletColor(vec4(1.0f, 0.0f, 0.0f, 1));
 		_pBGet->link = nullptr;
 		_pBTail->link = _pBGet;
 		_pBTail = _pBGet;
 		_pBGet->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+		_pBGet->_fBulletSpeed = fspeed;
 		_iBulletNum++;	//子彈數量紀錄
 	}
 }

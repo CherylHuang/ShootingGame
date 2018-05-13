@@ -99,18 +99,16 @@ void CPlayer::CreateBulletList()	//建立子彈串列
 	_pBHead->link = nullptr;
 	_pBTail = _pBHead;
 	_pBHead_shoot = _pBHead;	//子彈發射用
-	//_pBHead->GL_SetTRSMatrix(_mxPT); //設定子彈至玩家位置
 	_iBulletNum++;	//子彈數量紀錄
 
-	//the rest of nodes
+					//the rest of nodes
 	for (int i = 0; i < BULLET_NUM - 1; i++) {
-		if ( (_pBGet = new CBullet) == NULL) {
+		if ((_pBGet = new CBullet) == NULL) {
 			printf("記憶體不足\n"); exit(0);
 		}
 		_pBGet->link = nullptr;
 		_pBTail->link = _pBGet;
 		_pBTail = _pBGet;
-		//_pBGet->GL_SetTRSMatrix(_mxPT); //設定子彈至玩家位置
 		_iBulletNum++;	//子彈數量紀錄
 	}
 }

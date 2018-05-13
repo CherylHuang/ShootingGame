@@ -1,7 +1,7 @@
 // Model-View matrix and Projection matrix
 // Perspective projection with fixed camera position
 // Rotate the grid and the cube around the Y axis
-
+#include <time.h>
 #include "header/Angel.h"
 #include "Common/CCamera.h"
 #include "Common/CObjReader.h"
@@ -10,7 +10,6 @@
 #include "Common/CFirstBoss.h"
 #include "Common/CSecondBoss.h"
 #include "Common/CThirdBoss.h"
-//#include "Common/CLittleEnemy.h" ///////////////////////
 
 #define SPACE_KEY 32
 #define SCREEN_SIZE_X 500
@@ -20,6 +19,7 @@
 #define VP_HALFWIDTH  20.0f
 #define VP_HALFHEIGHT 20.0f
 #define NEXT_BULLET_DELAY 0.45f  //0.45f
+#define NEXT_BULLET_DELAY_BOSS3 1.3f
 
 // For Rotation
 GLfloat g_fYAngle = 0;  // Z軸的旋轉角度
@@ -32,22 +32,19 @@ CPlayer *g_pPlayer;
 CFirstBoss *g_pFirstBoss;
 CSecondBoss *g_pSecondBoss;
 CThirdBoss *g_pThirdBoss;
-//CLittleEnemy *g_pLittleEnemy;/////////////////////////////
 
 // For Counting
 float g_fcount = 0;
 float g_fcount_boss1 = 0;
 float g_fcount_boss3 = 0;
 
+// For Delay Time
+float g_NextBulletDelay_Boss3 = 1.3f;
+
 // PassiveMotion
 float g_fPTx;		//玩家移動x軸
 mat4 g_mxPT;		//玩家座標(g_fPTx, PLAYER_Y_AXIS, 0, 1)
 mat4 g_mxPS;		//戰鬥機大小
-
-// For View Point
-//GLfloat g_fRadius = 8.0;
-//GLfloat g_fTheta = 45.0f*DegreesToRadians;
-//GLfloat g_fPhi = 45.0f*DegreesToRadians;
 
 //----------------------------------------------------------------------------
 // 函式的原型宣告
@@ -74,7 +71,6 @@ void init( void )
 	g_pFirstBoss = new CFirstBoss;				//BOSS1
 	g_pSecondBoss = new CSecondBoss;			//BOSS2
 	g_pThirdBoss = new CThirdBoss;				//BOSS3
-	//g_pLittleEnemy = new CLittleEnemy;/////////////////////////////
 }
 
 void AutomaticRotation(float delta){
@@ -102,10 +98,9 @@ void GL_Display( void )
 
 	g_pStars->GL_Draw();
 	g_pPlayer->GL_Draw();
-	//g_pFirstBoss->GL_Draw();
+	g_pFirstBoss->GL_Draw();
 	//g_pSecondBoss->GL_Draw();
-	g_pThirdBoss->GL_Draw();
-	//g_pLittleEnemy->GL_Draw();//////////////////////////////////
+	//g_pThirdBoss->GL_Draw();
 
 	glutSwapBuffers();	// 交換 Frame Buffer
 }
@@ -135,10 +130,11 @@ void onFrameMove(float delta)
 	//BOSS3 + Little 子彈
 	g_fcount_boss3 += delta;
 	g_pThirdBoss->SetBulletPassiveMove();	//未發射子彈跟隨little
-	if (g_fcount_boss3 < NEXT_BULLET_DELAY) g_pThirdBoss->ShootBullet(delta);	//發射子彈
+	if (g_fcount_boss3 < g_NextBulletDelay_Boss3) g_pThirdBoss->ShootBullet(delta);	//發射子彈
 	else {
 		g_pThirdBoss->NextBullet();	//下一個子彈
-		g_fcount_boss3 -= NEXT_BULLET_DELAY;
+		g_fcount_boss3 -= g_NextBulletDelay_Boss3;
+		g_NextBulletDelay_Boss3 = NEXT_BULLET_DELAY_BOSS3 + (rand() % 10)*0.1f;
 	}
 	//----------------------------
 
@@ -147,7 +143,6 @@ void onFrameMove(float delta)
 	g_pFirstBoss->UpdateMatrix(delta);						//BOSS1
 	g_pSecondBoss->UpdateMatrix(delta);						//BOSS2 子物件運動
 	g_pThirdBoss->UpdateMatrix(delta);						//BOSS3
-	//g_pLittleEnemy->UpdateMatrix(delta);////////////////////////////
 
 	//----------------------------
 	// 由上層更新所有要被繪製物件的 View 與 Projection Matrix
@@ -158,7 +153,6 @@ void onFrameMove(float delta)
 		g_pFirstBoss->SetViewMatrix(mvx);
 		g_pSecondBoss->SetViewMatrix(mvx);
 		g_pThirdBoss->SetViewMatrix(mvx);
-		//g_pLittleEnemy->SetViewMatrix(mvx);/////////////////
 	}
 	mpx = camera->getProjectionMatrix(bPDirty);
 	if (bPDirty) { // 更新所有物件的 View Matrix
@@ -167,7 +161,6 @@ void onFrameMove(float delta)
 		g_pFirstBoss->SetProjectionMatrix(mpx);
 		g_pSecondBoss->SetProjectionMatrix(mpx);
 		g_pThirdBoss->SetProjectionMatrix(mpx);
-		//g_pLittleEnemy->SetProjectionMatrix(mpx);//////////////////////////
 	}
 
 	GL_Display();
@@ -210,7 +203,6 @@ void Win_Keyboard( unsigned char key, int x, int y )
 		delete g_pFirstBoss;	//BOSS1
 		delete g_pSecondBoss;	//BOSS2
 		delete g_pThirdBoss;	//BOSS3
-		//delete g_pLittleEnemy;/////////////////////////////
 		camera->destroyInstance();
 
         exit( EXIT_SUCCESS );
@@ -253,11 +245,6 @@ void Win_SpecialKeyboard(int key, int x, int y) {
 		// 計算旋轉矩陣並更新到 Shader 中
 		ry = RotateY(g_fYAngle); //  degree 
 
-		// Cube 的旋轉
-		//vT.x = 1.5; vT.y = 0.5; vT.z = -1.5;
-		//mxT = Translate(vT);
-		//g_pHouse->SetTRSMatrix(ry*mxT);
-
 //		glutPostRedisplay();  
 	}
 }
@@ -275,6 +262,8 @@ void GL_Reshape(GLsizei w, GLsizei h)
 
 int main( int argc, char **argv )
 {   
+	srand((unsigned)time(NULL));
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
     glutInitWindowSize( 500, 700 );

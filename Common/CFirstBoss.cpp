@@ -69,7 +69,7 @@ void CFirstBoss::GL_Draw()
 	//子彈顯示
 	_pBGet = _pBHead;
 	while (_pBGet != nullptr) {
-		if(_pBGet->_isShoot) _pBGet->GL_Draw();		//只顯示射出的子彈
+		if (_pBGet->_isShoot) _pBGet->GL_Draw();		//只顯示射出的子彈
 		_pBGet = _pBGet->link;
 	}
 }
@@ -102,9 +102,13 @@ void CFirstBoss::CreateBulletList()	//建立子彈串列
 	_pBTail = _pBHead;
 	_pBHead_shoot = _pBHead;	//子彈發射用
 	_pBHead->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+
+	float fspeed = rand() % 10 + 23.f;
+	_pBHead->_fBulletSpeed = fspeed;
+
 	_iBulletNum++;	//子彈數量紀錄
 
-	//the rest of nodes
+					//the rest of nodes
 	for (int i = 0; i < BULLET_NUM - 1; i++) {
 		if ((_pBGet = new CBullet(_fMT[1])) == NULL) {
 			printf("記憶體不足\n"); exit(0);
@@ -114,6 +118,7 @@ void CFirstBoss::CreateBulletList()	//建立子彈串列
 		_pBTail->link = _pBGet;
 		_pBTail = _pBGet;
 		_pBGet->GL_SetTRSMatrix(_mxMT * _mxBR); //設定子彈至BOSS位置
+		_pBGet->_fBulletSpeed = fspeed;
 		_iBulletNum++;	//子彈數量紀錄
 	}
 }

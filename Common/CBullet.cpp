@@ -6,6 +6,7 @@
 CBullet::CBullet()
 {
 	_isShoot = false;
+	_fBulletSpeed = 30.f;
 
 	//²£¥ÍObjÀÉ¹êÅéª«¥ó
 	_pBullet = new CObjReader("obj/bullet.obj");
@@ -23,6 +24,7 @@ CBullet::CBullet()
 CBullet::CBullet(float y)
 {
 	_isShoot = false;
+	_fBulletSpeed = 30.f;
 
 	//²£¥ÍObjÀÉ¹êÅéª«¥ó
 	_pBullet = new CObjReader("obj/bullet.obj");
@@ -70,7 +72,7 @@ void CBullet::ShootBulletUp(float delta, float passive_x) //¦V¤Wµo®g¤l¼u
 		_fBT[0] = passive_x;
 		_isShoot = true;
 	}
-	_fBT[1] += delta * BULLET_SPEED;
+	_fBT[1] += delta * _fBulletSpeed;
 	_mxBT = Translate(_fBT[0], _fBT[1], _fBT[2]);
 	_pBullet->SetTRSMatrix(_mxBT);
 }
@@ -82,7 +84,7 @@ void CBullet::ShootBulletDown(float delta, float passive_x) //¦V¤Uµo®g¤l¼u
 		_fBT[0] = passive_x;
 		_isShoot = true;
 	}
-	_fBT[1] -= delta * BULLET_SPEED;
+	_fBT[1] -= delta * _fBulletSpeed;
 	_mxBT = Translate(_fBT[0], _fBT[1], _fBT[2]);
 	_pBullet->SetTRSMatrix(_mxBT * _mxBR);
 }
@@ -94,7 +96,7 @@ void CBullet::ShootBulletDown(float delta, float passive_x, mat4 &mxS) //¦V¤Uµo®
 		_fBT[0] = passive_x;
 		_isShoot = true;
 	}
-	_fBT[1] -= delta * BULLET_SPEED;
+	_fBT[1] -= delta * _fBulletSpeed;
 	_mxBT = Translate(_fBT[0], _fBT[1], _fBT[2]);
 	_pBullet->SetTRSMatrix(_mxBT * _mxBR * mxS);
 }

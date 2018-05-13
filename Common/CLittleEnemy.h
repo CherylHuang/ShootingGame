@@ -34,7 +34,7 @@ public:
 	void NextBullet();							//下一顆子彈
 	void SetBulletPassiveMove();				//子彈未發射 跟隨角色
 
-	float _fTrackSpeed = 1.5f;			//路徑速度
+	float _fTrackSpeed;							//路徑速度
 
 };
 #endif

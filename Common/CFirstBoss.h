@@ -25,7 +25,6 @@ public:
 	void SetViewMatrix(mat4);
 	void SetProjectionMatrix(mat4);
 
-	//int _iBulletNum;
 	void CreateBulletList();							//建立子彈串列
 	void DeleteBulletList();							//刪除子彈串列
 	void ShootBullet(float delta);						//發射子彈

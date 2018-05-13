@@ -2,8 +2,6 @@
 #define CBULLET_H
 #include "../Header/Angel.h"
 
-#define BULLET_SPEED 30.f	//30.f
-
 class CBullet
 {
 protected:
@@ -24,6 +22,7 @@ public:
 	CBullet *link;						//for link list
 
 	bool _isShoot;						//子彈是否發射出去
+	float _fBulletSpeed;				//子彈速度
 
 	void GL_Draw();
 	void GL_SetTRSMatrix(mat4 &mat);
