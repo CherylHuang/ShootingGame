@@ -16,6 +16,7 @@ protected:
 	mat4 _mxMT;					//for main object translation
 
 	// Bullet List
+	mat4 _mxBT;								// for bullet translate
 	mat4 _mxBS;								// for big shoot scale
 	mat4 _mxBR;								//子彈轉向
 	CBullet *_pBHead, *_pBGet, *_pBTail;	//子彈串列
@@ -31,6 +32,7 @@ public:
 	virtual void SetViewMatrix(mat4) = 0;
 	virtual void SetProjectionMatrix(mat4) = 0;
 	mat4 GetTranslateMatrix();						//取得BOSS位置
+	mat4 GetBulletTranslateMatrix();				//取得子彈位置
 
 	int _iBulletNum;
 	virtual void CreateBulletList() = 0;							//建立子彈串列

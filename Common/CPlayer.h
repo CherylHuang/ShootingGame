@@ -44,6 +44,7 @@ protected:
 	mat4 _mxDER[DEFENSE_NUM];
 
 	// Bullet List
+	mat4 _mxBT;								// for bullet translate
 	CBullet *_pBHead, *_pBGet, *_pBTail;	//子彈串列
 	CBullet *_pBHead_shoot, *_pBGet_shoot;	//子彈發射用
 
@@ -73,6 +74,9 @@ public:
 	void ShootBullet(float delta, float passive_x);		//發射子彈
 	void NextBullet(float);								//下一顆子彈
 	void SetBulletPassiveMove(mat4 &);					//子彈跟隨滑鼠
+
+	mat4 GetTranslateMatrix();							//取得玩家位置
+	mat4 GetBulletTranslateMatrix();					//取得子彈位置
 
 };
 #endif

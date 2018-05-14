@@ -36,5 +36,7 @@ public:
 	void ResetBullet(float x, float y);
 	void ResetBullet(mat4 &mat,float x, float y);
 	void SetBulletColor(vec4);										//設定子彈顏色
+
+	mat4 GetTranslateMatrix();
 };
 #endif

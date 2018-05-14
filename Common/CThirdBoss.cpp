@@ -162,6 +162,7 @@ void CThirdBoss::ShootBullet(float delta)
 {
 	_pBGet_shoot = _pBHead_shoot;
 	_pBGet_shoot->ShootBulletDown(delta, _fMT[0], _mxBS);
+	_mxBT = _pBGet_shoot->GetTranslateMatrix();	//更新子彈位置
 	_pBGet_shoot->_isShoot = true;		//子彈射出
 
 	//Little Enemy
@@ -185,4 +186,15 @@ void CThirdBoss::NextBullet()
 
 	//Little Enemy
 	for (int i = 0; i < LITTLE_NUM; i++) _pLittleEnemy[i]->NextBullet();
+}
+
+//----------------------------------------------------------------
+mat4 CThirdBoss::GetLETranslateMatrix(int n)
+{
+	return _mxLT[n];
+}
+
+mat4 CThirdBoss::GetLEBulletTranslateMatrix(int n)
+{
+	return _pLittleEnemy[n]->GetBulletTranslateMatrix();
 }

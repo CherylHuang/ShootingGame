@@ -127,3 +127,9 @@ void CBullet::SetBulletColor(vec4 vColor)
 {
 	_pBullet->SetColor(vColor);
 }
+
+//------------------------------------------------
+mat4 CBullet::GetTranslateMatrix()
+{
+	return _mxBT;
+}

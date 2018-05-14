@@ -198,6 +198,7 @@ void CLittleEnemy::ShootBullet(float delta)
 {
 	_pBGet_shoot = _pBHead_shoot;
 	_pBGet_shoot->ShootBulletDown(delta, _fMT[0]);
+	_mxBT = _pBGet_shoot->GetTranslateMatrix();	//更新子彈位置
 	_pBGet_shoot->_isShoot = true;		//子彈射出
 }
 

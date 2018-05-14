@@ -23,7 +23,7 @@
 #define DEFENSE_TIME 5.0f
 #define REOPEN_DEFENSE_TIME 10.0f
 
-int g_iLevel = 1;	//第幾個魔王
+int g_iLevel = 3;	//第幾個魔王
 
 // For Rotation
 GLfloat g_fYAngle = 0;  // Z軸的旋轉角度
@@ -64,6 +64,7 @@ mat4 g_mxPS;		//戰鬥機大小
 //----------------------------------------------------------------------------
 // 函式的原型宣告
 extern void IdleProcess();
+void CollisionDetect();		//碰撞偵測
 
 void init(void)
 {
@@ -100,16 +101,94 @@ void init(void)
 	g_fDefenseCount = 0;
 }
 
-void AutomaticRotation(float delta) {
-	mat4 ry, mxT;
-	vec4 vT;
+void CollisionDetect()		//碰撞偵測
+{
+	mat4 mxPlayerPos, mxPBulletPos, mxBossPos, mxBBulletPos;
+	float fPlayer_x, fPlayer_y;			//player position
+	float fPBullet_x, fPBullet_y;		//player bullet position
+	float fBoss_x, fBoss_y;				//boss position
+	float fBBullet_x, fBBullet_y;		//boss bullet position
 
-	g_fYAngle += g_fDir * delta * 250;     // 設定每秒轉幾度
-	if (g_fYAngle > 360.0) g_fYAngle -= 360;
-	else if (g_fYAngle < 0.0) g_fYAngle += 360.0;
-	else;
-	// 計算旋轉矩陣並更新到 Shader 中
-	ry = RotateY(g_fYAngle); //  degree 
+	if (g_pPlayer) {		//玩家存在
+		mxPlayerPos = g_pPlayer->GetTranslateMatrix();			//取得玩家位置
+		fPlayer_x = mxPlayerPos._m[0][3];
+		fPlayer_y = mxPlayerPos._m[1][3];
+		mxPBulletPos = g_pPlayer->GetBulletTranslateMatrix();	//取得玩家子彈位置
+		fPBullet_x = mxPBulletPos._m[0][3];
+		fPBullet_y = mxPBulletPos._m[1][3];
+	}
+
+	if (g_iLevel == 1) {		//BOSS1
+		if (g_pFirstBoss) {		//BOSS1存在
+			bool isFirstBullet = g_pFirstBoss->GetFirstShoot();			//是否為第一發子彈
+			mxBossPos = g_pFirstBoss->GetTranslateMatrix();				//取得BOSS位置
+			fBoss_x = mxBossPos._m[0][3];
+			fBoss_y = mxBossPos._m[1][3];
+			mxBBulletPos = g_pFirstBoss->GetBulletTranslateMatrix();	//取得BOSS子彈位置
+			fBBullet_x = mxBBulletPos._m[0][3];
+			fBBullet_y = mxBBulletPos._m[1][3];
+			
+			if (isFirstBullet) {	//第一發子彈
+				if (fBBullet_y - 0.15f < PLAYER_Y_AXIS + 1.75f && 
+					fBBullet_x - 0.5f < g_fPTx + 2.f && 
+					fBBullet_x + 0.5f > g_fPTx - 2.f) {					//BOSS 大子彈 碰撞玩家
+					if (!g_bisOpenDefense) {							//防護罩未開啟
+						//printf("COLLISION!\n");
+					}
+				}
+			} 
+		
+			if (fPBullet_y > fBoss_y - 0.61f && fPBullet_x < fBoss_x + 1.f && fPBullet_x > fBoss_x - 1.f) {	//玩家子彈碰撞BOSS1
+				//printf("COLLISION!\n");
+			}
+		}
+	} //--------Level1
+
+	else if (g_iLevel == 3) {		//BOSS3
+		if (g_pThirdBoss) {			//BOSS3存在
+			mxBossPos = g_pThirdBoss->GetTranslateMatrix();				//取得BOSS位置
+			fBoss_x = mxBossPos._m[0][3];
+			fBoss_y = mxBossPos._m[1][3];
+			mxBBulletPos = g_pThirdBoss->GetBulletTranslateMatrix();	//取得BOSS子彈位置
+			fBBullet_x = mxBBulletPos._m[0][3];
+			fBBullet_y = mxBBulletPos._m[1][3];
+			
+			mat4 mxLEPos[LITTLE_NUM], mxLBulletPos[LITTLE_NUM];					//小怪位置 & 小怪子彈位置
+			float fLE_x[LITTLE_NUM], fLE_y[LITTLE_NUM];
+			float fLBullet_x[LITTLE_NUM], fLBullet_y[LITTLE_NUM];
+			for (int i = 0; i < LITTLE_NUM; i++) {
+				mxLEPos[i] = g_pThirdBoss->GetLETranslateMatrix(i);				//取得小怪位置
+				fLE_x[i] = mxLEPos[i]._m[0][3];
+				fLE_y[i] = mxLEPos[i]._m[1][3];
+				mxLBulletPos[i] = g_pThirdBoss->GetLEBulletTranslateMatrix(i);	//取得小怪 子彈位置
+				fLBullet_x[i] = mxLBulletPos[i]._m[0][3];
+				fLBullet_y[i] = mxLBulletPos[i]._m[1][3];
+			}
+			//printf("%f, %f\n", fBBullet_x, fBBullet_y);
+			if (fPBullet_y > fBoss_y - 1.296f && fPBullet_x < fBoss_x + 2.269f && fPBullet_x > fBoss_x - 2.195f) {	//玩家子彈碰撞BOSS3
+				//printf("COLLISION!\n");
+			}
+			for (int i = 0; i < LITTLE_NUM; i++) {
+				if (fPBullet_y > fLE_y[i] - 0.5124f && fPBullet_x < fLE_x[i] + 0.436f && fPBullet_x > fLE_x[i] - 0.436f) {	//玩家子彈碰撞小怪
+					//printf("COLLISION!\n");
+				}
+				if (fLBullet_y[i] < PLAYER_Y_AXIS + 1.75f && fLBullet_y[i] > PLAYER_Y_AXIS - 1.75f &&
+					fLBullet_x[i] < g_fPTx + 2.f && fLBullet_x[i] > g_fPTx - 2.f) {						//小怪子彈碰撞玩家
+					//printf("COLLISION!\n");
+				}
+			}
+		}
+	} //--------Level3
+
+	  //BOSS一般子彈碰撞玩家
+	if (fBBullet_y < PLAYER_Y_AXIS + 1.75f && fBBullet_y > PLAYER_Y_AXIS - 1.75f &&
+		fBBullet_x < g_fPTx + 2.f && fBBullet_x > g_fPTx - 2.f) {
+		if (!g_bisOpenDefense) {	//防護罩未開啟
+			//printf("COLLISION!\n");
+		}
+		//else printf("NO COLLISION!\n");
+	}
+
 }
 
 //----------------------------------------------------------------------------
@@ -217,6 +296,8 @@ void onFrameMove(float delta)
 	g_pFirstBoss->UpdateMatrix(delta);						//BOSS1
 	g_pSecondBoss->UpdateMatrix(delta);						//BOSS2 子物件運動
 	g_pThirdBoss->UpdateMatrix(delta);						//BOSS3
+
+	CollisionDetect();										//碰撞偵測
 
 	//----------------------------
 	// 由上層更新所有要被繪製物件的 View 與 Projection Matrix

@@ -31,10 +31,12 @@ public:
 	CThirdBoss();
 	~CThirdBoss();
 
-	void UpdateMatrix(float);			//更新運動
+	void UpdateMatrix(float);					//更新運動
 	void GL_Draw();
 	void SetViewMatrix(mat4);
 	void SetProjectionMatrix(mat4);
+	mat4 GetLETranslateMatrix(int n);			//取得(第n隻)小怪位置
+	mat4 GetLEBulletTranslateMatrix(int n);		//取得(第n隻)小怪 子彈位置
 
 	void CreateBulletList();					//建立子彈串列
 	void DeleteBulletList();					//刪除子彈串列

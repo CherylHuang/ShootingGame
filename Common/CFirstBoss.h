@@ -31,5 +31,7 @@ public:
 	void NextBullet();					//下一顆子彈
 	void SetBulletPassiveMove();		//子彈未發射 跟隨角色
 
+	bool GetFirstShoot();				//回傳是否為第一發子彈
+
 };
 #endif

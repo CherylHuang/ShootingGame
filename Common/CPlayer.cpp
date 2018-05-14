@@ -276,6 +276,7 @@ void CPlayer::ShootBullet(float delta, float passive_x)
 {
 	_pBGet_shoot = _pBHead_shoot;
 	_pBGet_shoot->ShootBulletUp(delta, passive_x);
+	_mxBT = _pBGet_shoot->GetTranslateMatrix();	//更新子彈位置
 	_pBGet_shoot->_isShoot = true;		//子彈射出
 }
 
@@ -294,4 +295,15 @@ void CPlayer::NextBullet(float g_fPTx)
 			_iBulletNum++; //子彈數量紀錄
 		}
 	}
+}
+
+//----------------------------------------------
+mat4 CPlayer::GetTranslateMatrix()
+{
+	return _mxPT;
+}
+
+mat4 CPlayer::GetBulletTranslateMatrix()
+{
+	return _mxBT;
 }

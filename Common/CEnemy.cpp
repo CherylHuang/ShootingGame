@@ -15,3 +15,8 @@ mat4 CEnemy::GetTranslateMatrix()
 {
 	return _mxMT;
 }
+
+mat4 CEnemy::GetBulletTranslateMatrix()
+{
+	return _mxBT;
+}
