@@ -7,25 +7,36 @@
 
 #define PLAYER_Y_AXIS -5.f
 #define BULLET_NUM 10	//子彈數量
+#define DEFENSE_NUM 48	//防護罩數量
+#define DE_RADIUS 1.6f	//防護罩  距離半徑
 
 class CPlayer
 {
 protected:
 	// For Objects
-	CObjReader *_pPlayer;		//讀取Obj檔指標物件
-	CObjReader *_pHPFrame;		//血量框
-	CQuad *_pHP;				//血量條
+	CObjReader *_pPlayer;					//讀取Obj檔指標物件
+	CObjReader *_pHPFrame;					//血量框
+	//CQuad *_pHP;							//血量條
+	CObjReader *_pDefense[DEFENSE_NUM];		//防護罩
+	CObjReader *_pAttackStroeStar[3];		//攻擊
 
 	//TRS matrix
-	float _fPT[3] = { 0 };
+	float _fPT[3] = { 0 };		//for player translation / scale
 	float _fPlayerScale = 1;
-	mat4 _mxPT, _mxPS;			//for player translation / scale
-	float _fHPFT[3] = { 0 };
+	mat4 _mxPT, _mxPS;
+	float _fHPFT[3] = { 0 };	//for HP frame translation / scale
 	float _fHPFS[3];
-	mat4 _mxHPFT, _mxHPFS;		//for HP frame translation / scale
-	float _fHPT[3] = { 0 };
-	float _fHPS[3];
-	mat4 _mxHPT, _mxHPS;		//for HP translation / scale
+	mat4 _mxHPFT, _mxHPFS;
+	float _fAKT[3][3] = { 0 };		//for Attack Store Star translation / scale
+	float _fAKS[3][3];
+	mat4 _mxAKT[3], _mxAKS[3];
+	//float _fHPT[3] = { 0 };	//for HP translation / scale
+	//float _fHPS[3];
+	//mat4 _mxHPT, _mxHPS;
+	GLfloat _fDEAngle;			//防護罩 繞轉角
+	mat4 _mxDET[DEFENSE_NUM];	//防護罩
+	mat4 _mxDES[DEFENSE_NUM];
+	mat4 _mxDER[DEFENSE_NUM];
 
 	// Bullet List
 	CBullet *_pBHead, *_pBGet, *_pBTail;	//子彈串列
@@ -37,11 +48,15 @@ public:
 	~CPlayer();
 
 	void GL_Draw();
+	void GL_DrawDefense();								//顯示防護罩
+	void GL_DrawAttack(int);							//顯示攻擊蓄力
 	void GL_SetTRSMatrix(mat4 &mat);
+	void GL_SetTranslatMatrix(mat4 &mat);				//更新位置
 	void SetViewMatrix(mat4);
 	void SetProjectionMatrix(mat4);
+	void UpdateMatrix(float);							//更新運動
 	float GetPlayerScale();
-	void SetHPPassiveMotion(float);						//血量條移動
+	void SetPassiveMotion(float);						//血量條移動
 
 	int _iBulletNum;
 	void CreateBulletList();							//建立子彈串列

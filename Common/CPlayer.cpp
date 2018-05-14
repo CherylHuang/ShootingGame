@@ -23,6 +23,33 @@ CPlayer::CPlayer()
 	_mxHPFS = Scale(_fHPFS[0], _fHPFS[1], _fHPFS[2]);	//縮放
 	_pHPFrame->SetTRSMatrix(_mxHPFS * _mxHPFT);
 
+	//ATTACK
+	float fAKscale = 0.6f;
+	for (int i = 0; i < 3; i++) {
+		_pAttackStroeStar[i] = new CObjReader("obj/star_little.obj");
+		_pAttackStroeStar[i]->SetShader();
+		_fAKT[i][1] = -4.0f;
+		if (i == 0) _fAKT[i][0] = -0.4f;		//LEFT
+		else if (i == 2) _fAKT[i][0] = 0.4f;	//RIGHT
+		_mxAKT[i] = Translate(_fAKT[i][0], _fAKT[i][1], _fAKT[i][2]);
+		_mxAKS[i] = Scale(fAKscale, fAKscale, fAKscale);
+		_pAttackStroeStar[i]->SetTRSMatrix(_mxAKT[i] * _mxAKS[i]);
+	}
+
+	//DEFNESE
+	_fDEAngle = 0;
+	float fDEscale = 0.3f;
+	for (int i = 0; i < DEFENSE_NUM; i++) {
+		_pDefense[i] = new CObjReader("obj/square.obj");
+		_pDefense[i]->SetColor(vec4(1.0f, 1.0f, 1.0f, 1));	//WHITE
+		_pDefense[i]->SetShader();
+		_mxDET[i] = Translate(DE_RADIUS * cosf(M_PI*2.0f*i / DEFENSE_NUM), DE_RADIUS * sinf(M_PI*2.0f*i / DEFENSE_NUM), 0.0f);
+		_mxDES[i] = Scale(fDEscale, fDEscale, fDEscale);
+		_mxDER[i] = RotateZ(-45.f + 360.f / DEFENSE_NUM*i);	//自轉 朝向噴射機
+		_pDefense[i]->SetTRSMatrix(_mxPT * _mxDET[i] * _mxDES[i] * _mxDER[i]);
+	}
+
+	//--------------------------------------
 	_iBulletNum = 0;
 	CreateBulletList();	//子彈
 }
@@ -31,6 +58,8 @@ CPlayer::~CPlayer()
 {
 	delete _pPlayer;
 	delete _pHPFrame;
+	for (int i = 0; i < DEFENSE_NUM; i++) delete _pDefense[i];
+	for (int i = 0; i < 3; i++) delete _pAttackStroeStar[i];
 	DeleteBulletList();		//子彈
 }
 
@@ -48,18 +77,36 @@ void CPlayer::GL_Draw()
 	}
 }
 
+void CPlayer::GL_DrawAttack(int num)
+{
+	if (num >= 1) _pAttackStroeStar[0]->Draw();	//一顆星
+	if (num >= 2) _pAttackStroeStar[1]->Draw();	//兩顆星
+	if (num >= 3) _pAttackStroeStar[2]->Draw();	//三顆星
+}
+
+void CPlayer::GL_DrawDefense()
+{
+	for (int i = 0; i < DEFENSE_NUM; i++) _pDefense[i]->Draw();
+}
+
 void CPlayer::GL_SetTRSMatrix(mat4 &mat)
+{
+	_pPlayer->SetTRSMatrix(mat);
+}
+
+void CPlayer::GL_SetTranslatMatrix(mat4 &mat)
 {
 	_mxPT = mat;
 	_fPT[0] = _mxPT._m[0][3];
 	_fPT[1] = _mxPT._m[1][3];
-	_pPlayer->SetTRSMatrix(mat);
 }
 
 void CPlayer::SetViewMatrix(mat4 mvx)
 {
 	_pPlayer->SetViewMatrix(mvx);		//玩家
 	_pHPFrame->SetViewMatrix(mvx);		//血量框
+	for (int i = 0; i < DEFENSE_NUM; i++) _pDefense[i]->SetViewMatrix(mvx);
+	for (int i = 0; i < 3; i++) _pAttackStroeStar[i]->SetViewMatrix(mvx);
 	_pBGet = _pBHead;					//子彈串列
 	while (_pBGet != nullptr) {
 		_pBGet->SetViewMatrix(mvx);
@@ -71,6 +118,8 @@ void CPlayer::SetProjectionMatrix(mat4 mpx)
 {
 	_pPlayer->SetProjectionMatrix(mpx);	//玩家
 	_pHPFrame->SetViewMatrix(mpx);		//血量框
+	for (int i = 0; i < DEFENSE_NUM; i++) _pDefense[i]->SetProjectionMatrix(mpx);
+	for (int i = 0; i < 3; i++) _pAttackStroeStar[i]->SetProjectionMatrix(mpx);
 	_pBGet = _pBHead;					//子彈串列
 	while (_pBGet != nullptr) {
 		_pBGet->SetProjectionMatrix(mpx);
@@ -79,11 +128,34 @@ void CPlayer::SetProjectionMatrix(mat4 mpx)
 }
 
 //----------------------------------------------
-void CPlayer::SetHPPassiveMotion(float x)
+void CPlayer::UpdateMatrix(float delta)
 {
+	mat4 mxDER[DEFENSE_NUM];	//防護罩 繞轉矩陣
+
+	//防護罩
+	_fDEAngle += 50.f * delta;
+	if (_fDEAngle > 360) _fDEAngle -= 360; //歸零
+	for (int i = 0; i < DEFENSE_NUM; i++) {
+		mxDER[i] = RotateZ(_fDEAngle);
+		_pDefense[i]->SetTRSMatrix(_mxPT * mxDER[i] * _mxDET[i] * _mxDES[i] * _mxDER[i]);
+	}
+}
+
+void CPlayer::SetPassiveMotion(float x)
+{
+	//血量條
 	_fHPFT[0] = x / 2.f;
 	_mxHPFT = Translate(_fHPFT[0], _fHPFT[1], _fHPFT[2]);
 	_pHPFrame->SetTRSMatrix(_mxHPFS * _mxHPFT);
+
+	//ATTACK STORE STAR
+	for (int i = 0; i < 3; i++) {
+		if (i == 0) _fAKT[i][0] = x - 0.4f;			//LEFT
+		else if (i == 2) _fAKT[i][0] = x + 0.4f;	//RIGHT
+		else _fAKT[i][0] = x;
+		_mxAKT[i] = Translate(_fAKT[i][0], _fAKT[i][1], _fAKT[i][2]);
+		_pAttackStroeStar[i]->SetTRSMatrix(_mxAKT[i] * _mxAKS[i]);
+	}
 }
 
 float CPlayer::GetPlayerScale()
@@ -101,7 +173,7 @@ void CPlayer::CreateBulletList()	//建立子彈串列
 	_pBHead_shoot = _pBHead;	//子彈發射用
 	_iBulletNum++;	//子彈數量紀錄
 
-					//the rest of nodes
+	//the rest of nodes
 	for (int i = 0; i < BULLET_NUM - 1; i++) {
 		if ((_pBGet = new CBullet) == NULL) {
 			printf("記憶體不足\n"); exit(0);
