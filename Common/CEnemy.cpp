@@ -10,3 +10,8 @@ CEnemy::~CEnemy()
 {
 	if (_pMainBody != NULL) delete _pMainBody;
 }
+
+mat4 CEnemy::GetTranslateMatrix()
+{
+	return _mxMT;
+}

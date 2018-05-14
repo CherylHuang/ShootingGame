@@ -23,12 +23,14 @@
 #define DEFENSE_TIME 5.0f
 #define REOPEN_DEFENSE_TIME 10.0f
 
+int g_iLevel = 1;	//第幾個魔王
+
 // For Rotation
 GLfloat g_fYAngle = 0;  // Z軸的旋轉角度
 GLfloat g_fDir = 1;     // 旋轉方向
 bool    m_bAutoMove = false; // Controlled by Space Key
 
-							 // Objects
+// Objects
 CBGStars *g_pStars;
 CPlayer *g_pPlayer;
 CFirstBoss *g_pFirstBoss;
@@ -39,6 +41,7 @@ CThirdBoss *g_pThirdBoss;
 bool g_bStoringAttack;		//蓄力中
 int g_iAttackStarNum;		//蓄力星星數
 float g_fAttackCount;		//蓄力計時
+bool g_bMissileShoot;		//是否要發射導彈
 
 // Player Defense
 bool g_bCanOpenDefense;	//是否可開啟防護罩
@@ -58,8 +61,8 @@ float g_fPTx;		//玩家移動x軸
 mat4 g_mxPT;		//玩家座標(g_fPTx, PLAYER_Y_AXIS, 0, 1)
 mat4 g_mxPS;		//戰鬥機大小
 
-					//----------------------------------------------------------------------------
-					// 函式的原型宣告
+//----------------------------------------------------------------------------
+// 函式的原型宣告
 extern void IdleProcess();
 
 void init(void)
@@ -89,6 +92,7 @@ void init(void)
 	g_bStoringAttack = false;
 	g_iAttackStarNum = 0;	//攻擊蓄力星星
 	g_fAttackCount = 0;
+	g_bMissileShoot = false;
 
 	//DEFENSE
 	g_bCanOpenDefense = true;
@@ -114,13 +118,15 @@ void GL_Display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the window 清顏色, 將深度清為1
 
-	g_pStars->GL_Draw();
+	g_pStars->GL_Draw();								//背景
 	g_pPlayer->GL_Draw();
 	if (g_bisOpenDefense) g_pPlayer->GL_DrawDefense();	//防護罩顯示
 	g_pPlayer->GL_DrawAttack(g_iAttackStarNum);			//攻擊蓄力顯示
-	g_pFirstBoss->GL_Draw();
-	//g_pSecondBoss->GL_Draw();
-	//g_pThirdBoss->GL_Draw();
+
+	//BOSS
+	if (g_iLevel == 1) g_pFirstBoss->GL_Draw();
+	if (g_iLevel == 2) g_pSecondBoss->GL_Draw();
+	if (g_iLevel == 3) g_pThirdBoss->GL_Draw();
 
 	glutSwapBuffers();	// 交換 Frame Buffer
 }
@@ -170,6 +176,19 @@ void onFrameMove(float delta)
 		}
 	}
 	else {
+		if (g_iAttackStarNum > 0) {				//非蓄力中、星星數 > 0
+			g_bMissileShoot = true;				//導彈發射
+		}
+	}
+
+	//導彈發射
+	if (g_bMissileShoot) {
+		mat4 mxBossPos;
+		if (g_iLevel == 1) mxBossPos = g_pFirstBoss->GetTranslateMatrix();
+		if (g_iLevel == 2) mxBossPos = g_pSecondBoss->GetTranslateMatrix();
+		if (g_iLevel == 3) mxBossPos = g_pThirdBoss->GetTranslateMatrix();
+		g_pPlayer->ShootMissile(delta, g_fPTx, mxBossPos, g_iAttackStarNum);	//根據蓄力量，發射導彈至BOSS位置
+		if (g_pPlayer->_bMissileIsShoot == false) g_bMissileShoot = false;		//導彈發射完成
 		g_fAttackCount = 0;
 		g_iAttackStarNum = 0;
 	}
@@ -199,8 +218,8 @@ void onFrameMove(float delta)
 	g_pSecondBoss->UpdateMatrix(delta);						//BOSS2 子物件運動
 	g_pThirdBoss->UpdateMatrix(delta);						//BOSS3
 
-															//----------------------------
-															// 由上層更新所有要被繪製物件的 View 與 Projection Matrix
+	//----------------------------
+	// 由上層更新所有要被繪製物件的 View 與 Projection Matrix
 	mvx = camera->getViewMatrix(bVDirty);
 	if (bVDirty) { // 更新所有物件的 View Matrix
 		g_pStars->SetViewMatrix(mvx);

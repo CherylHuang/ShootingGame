@@ -23,7 +23,7 @@ CPlayer::CPlayer()
 	_mxHPFS = Scale(_fHPFS[0], _fHPFS[1], _fHPFS[2]);	//縮放
 	_pHPFrame->SetTRSMatrix(_mxHPFS * _mxHPFT);
 
-	//ATTACK
+	//ATTACK SOTRE STAR
 	float fAKscale = 0.6f;
 	for (int i = 0; i < 3; i++) {
 		_pAttackStroeStar[i] = new CObjReader("obj/star_little.obj");
@@ -35,6 +35,14 @@ CPlayer::CPlayer()
 		_mxAKS[i] = Scale(fAKscale, fAKscale, fAKscale);
 		_pAttackStroeStar[i]->SetTRSMatrix(_mxAKT[i] * _mxAKS[i]);
 	}
+
+	//ATTACK MISSILE
+	_bMissileIsShoot = false;	//未發射導彈
+	_pAttackMissile = new CObjReader("obj/star.obj");
+	_pAttackMissile->SetShader();
+	_fAKMT[1] = PLAYER_Y_AXIS; //y座標
+	_mxAKMT = Translate(_fAKMT[0], _fAKMT[1], _fAKMT[2]);
+	_pAttackMissile->SetTRSMatrix(_mxAKMT);
 
 	//DEFNESE
 	_fDEAngle = 0;
@@ -60,6 +68,7 @@ CPlayer::~CPlayer()
 	delete _pHPFrame;
 	for (int i = 0; i < DEFENSE_NUM; i++) delete _pDefense[i];
 	for (int i = 0; i < 3; i++) delete _pAttackStroeStar[i];
+	delete _pAttackMissile;	//導彈
 	DeleteBulletList();		//子彈
 }
 
@@ -68,6 +77,7 @@ void CPlayer::GL_Draw()
 {
 	_pPlayer->Draw();
 	_pHPFrame->DrawW();
+	if(_bMissileIsShoot) _pAttackMissile->Draw();	//導彈發射中才顯示
 
 	//子彈顯示
 	_pBGet = _pBHead;
@@ -103,11 +113,13 @@ void CPlayer::GL_SetTranslatMatrix(mat4 &mat)
 
 void CPlayer::SetViewMatrix(mat4 mvx)
 {
-	_pPlayer->SetViewMatrix(mvx);		//玩家
-	_pHPFrame->SetViewMatrix(mvx);		//血量框
+	_pPlayer->SetViewMatrix(mvx);			//玩家
+	_pHPFrame->SetViewMatrix(mvx);			//血量框
 	for (int i = 0; i < DEFENSE_NUM; i++) _pDefense[i]->SetViewMatrix(mvx);
 	for (int i = 0; i < 3; i++) _pAttackStroeStar[i]->SetViewMatrix(mvx);
-	_pBGet = _pBHead;					//子彈串列
+	_pAttackMissile->SetViewMatrix(mvx);	//導彈
+
+	_pBGet = _pBHead;						//子彈串列
 	while (_pBGet != nullptr) {
 		_pBGet->SetViewMatrix(mvx);
 		_pBGet = _pBGet->link;
@@ -116,11 +128,13 @@ void CPlayer::SetViewMatrix(mat4 mvx)
 
 void CPlayer::SetProjectionMatrix(mat4 mpx)
 {
-	_pPlayer->SetProjectionMatrix(mpx);	//玩家
-	_pHPFrame->SetViewMatrix(mpx);		//血量框
+	_pPlayer->SetProjectionMatrix(mpx);			//玩家
+	_pHPFrame->SetViewMatrix(mpx);				//血量框
 	for (int i = 0; i < DEFENSE_NUM; i++) _pDefense[i]->SetProjectionMatrix(mpx);
 	for (int i = 0; i < 3; i++) _pAttackStroeStar[i]->SetProjectionMatrix(mpx);
-	_pBGet = _pBHead;					//子彈串列
+	_pAttackMissile->SetProjectionMatrix(mpx);	//導彈
+
+	_pBGet = _pBHead;							//子彈串列
 	while (_pBGet != nullptr) {
 		_pBGet->SetProjectionMatrix(mpx);
 		_pBGet = _pBGet->link;
@@ -156,6 +170,57 @@ void CPlayer::SetPassiveMotion(float x)
 		_mxAKT[i] = Translate(_fAKT[i][0], _fAKT[i][1], _fAKT[i][2]);
 		_pAttackStroeStar[i]->SetTRSMatrix(_mxAKT[i] * _mxAKS[i]);
 	}
+
+	//MISSILE
+	if (!_bMissileIsShoot) {	//未發射 跟隨玩家
+		_fAKMT[0] = x; //x座標
+		_fAKMT[1] = PLAYER_Y_AXIS; //y座標
+		_mxAKMT = Translate(_fAKMT[0], _fAKMT[1], _fAKMT[2]);
+		_pAttackMissile->SetTRSMatrix(_mxAKMT);
+	}
+}
+
+void CPlayer::ShootMissile(float delta, float passive_x, mat4 &mxBossPos, int starNum)		//射出導彈
+{
+	//SCALE----------------------------
+	if(starNum == 1) _fMissileScale = 0.5f;			//根據蓄力數縮放
+	else if(starNum == 2) _fMissileScale = 0.8f;
+	else if (starNum == 3) _fMissileScale = 1.2f;
+	_mxAKMS = Scale(_fMissileScale, _fMissileScale, _fMissileScale);
+
+	//TRANSLATE------------------------
+	if (!_bMissileIsShoot && _mxAKMT != mxBossPos) {
+		_fAKMT[0] = passive_x;		//固定發射時的x座標
+		_bMissileIsShoot = true;
+	}
+
+	//BOSS X軸 > 導彈 X軸
+	if (mxBossPos._m[0][3] > _fAKMT[0])_fAKMT[0] += delta * (MISSILE_SPEED - 10.f);	//微調X軸速度
+	else _fAKMT[0] -= delta * (MISSILE_SPEED - 10.f);
+	//BOSS Y軸 > 導彈 Y軸
+	if (mxBossPos._m[1][3] > _fAKMT[1])_fAKMT[1] += delta * MISSILE_SPEED;
+	else _fAKMT[1] -= delta * MISSILE_SPEED;
+	_mxAKMT = Translate(_fAKMT[0], _fAKMT[1], _fAKMT[2]);
+
+	//導彈與BOSS相差距離
+	float fDis_x, fDis_y;
+	fDis_x = mxBossPos._m[0][3] - _fAKMT[0];
+	if (fDis_x < 0) fDis_x = -fDis_x;
+	fDis_y = mxBossPos._m[1][3] - _fAKMT[1];
+	if (fDis_y < 0)fDis_y = -fDis_y;
+
+	if (fDis_x > 0.5f || fDis_y > 0.5f) {		//導彈尚未到BOSS位置
+		_pAttackMissile->SetTRSMatrix(_mxAKMT * _mxAKMS);	//往BOSS方向移動
+	}
+	else {
+		_bMissileIsShoot = false;	//導彈發射完成
+
+		//導彈歸位
+		_fAKMT[0] = passive_x;
+		_fAKMT[1] = PLAYER_Y_AXIS;
+		_mxAKMT = Translate(_fAKMT[0], _fAKMT[1], _fAKMT[2]);
+		_pAttackMissile->SetTRSMatrix(_mxAKMT);
+	}
 }
 
 float CPlayer::GetPlayerScale()
@@ -171,7 +236,7 @@ void CPlayer::CreateBulletList()	//建立子彈串列
 	_pBHead->link = nullptr;
 	_pBTail = _pBHead;
 	_pBHead_shoot = _pBHead;	//子彈發射用
-	_iBulletNum++;	//子彈數量紀錄
+	_iBulletNum++;				//子彈數量紀錄
 
 	//the rest of nodes
 	for (int i = 0; i < BULLET_NUM - 1; i++) {

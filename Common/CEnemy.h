@@ -30,6 +30,7 @@ public:
 	virtual void GL_Draw() = 0;
 	virtual void SetViewMatrix(mat4) = 0;
 	virtual void SetProjectionMatrix(mat4) = 0;
+	mat4 GetTranslateMatrix();						//取得BOSS位置
 
 	int _iBulletNum;
 	virtual void CreateBulletList() = 0;							//建立子彈串列

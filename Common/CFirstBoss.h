@@ -25,11 +25,11 @@ public:
 	void SetViewMatrix(mat4);
 	void SetProjectionMatrix(mat4);
 
-	void CreateBulletList();							//建立子彈串列
-	void DeleteBulletList();							//刪除子彈串列
-	void ShootBullet(float delta);						//發射子彈
-	void NextBullet();									//下一顆子彈
-	void SetBulletPassiveMove();						//子彈未發射 跟隨角色
+	void CreateBulletList();			//建立子彈串列
+	void DeleteBulletList();			//刪除子彈串列
+	void ShootBullet(float delta);		//發射子彈
+	void NextBullet();					//下一顆子彈
+	void SetBulletPassiveMove();		//子彈未發射 跟隨角色
 
 };
 #endif
