@@ -171,7 +171,6 @@ void CPlayer::UpdateMatrix(float delta)
 
 	//------------
 	_pPlayerHP->UpdateMatrix(delta);			//更新血條
-	_mxHP_Pos = _pPlayerHP->GetTRSMatrix();		//取得血條位置
 }
 
 void CPlayer::SetPassiveMotion(float x)
@@ -335,7 +334,7 @@ mat4 CPlayer::GetBulletTranslateMatrix()
 //----------------------------------------------
 mat4 CPlayer::GetTRSMatrix_HP()
 {
-	return(_mxHP_Pos);
+	return(_pPlayerHP->GetTRSMatrix());
 }
 
 void CPlayer::AttackedByEnemies(float delta)

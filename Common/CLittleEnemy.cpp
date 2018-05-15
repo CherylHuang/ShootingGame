@@ -14,6 +14,17 @@ CLittleEnemy::CLittleEnemy()
 	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]);
 	_pMainBody->SetTRSMatrix(_mxMT);
 
+	//HP BAR
+	_fHPMoveT_x = 0;		//調整移動
+	_fHPMoveS_x = 0.9f;		//基本縮放
+	_fHPS[0] = 0.65f;		//X軸縮放
+	_fHPS[1] = HP_Y_SCALE;	//Y
+	_fHPS[2] = 1.0f;		//Z
+	_mxHPS = Scale(_fHPS[0], _fHPS[1], _fHPS[2]);			//縮放matrix
+	_fHPT[1] = HP_HIGHT;
+	_mxHPT = Translate(_fHPT[0], _fHPT[1], _fHPT[2]);		//位移Matrix
+	_pLE_HP = new CHealthPoints(_fHPT[1], _fHPS[0]);		//小怪血條
+
 	_mxBR = RotateZ(180.0f);	//for bullet rotate
 	_iBulletNum = 0;
 	CreateBulletList();			//子彈
@@ -31,6 +42,22 @@ CLittleEnemy::CLittleEnemy(int RandomColor)
 	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]);
 	_pMainBody->SetTRSMatrix(_mxMT);
 
+	//HP BAR
+	_fHPMoveT_x = 0;		//調整移動
+	_fHPMoveS_x = 0.9f;		//基本縮放
+	_fHPS[0] = 0.65f;		//X軸縮放
+	_fHPS[1] = HP_Y_SCALE;	//Y
+	_fHPS[2] = 1.0f;		//Z
+	_mxHPS = Scale(_fHPS[0], _fHPS[1], _fHPS[2]);			//縮放matrix
+	_fHPT[1] = HP_HIGHT;
+	_mxHPT = Translate(_fHPT[0], _fHPT[1], _fHPT[2]);		//位移Matrix
+	_pLE_HP = new CHealthPoints(_fHPT[1], _fHPS[0]);		//小怪血條
+
+	//隨機顏色
+	if (RandomColor == 0) _pLE_HP->SetColor(vec4(1.0f, 1.0f, 0.0f, 1));			//YELLOW
+	else if (RandomColor == 1) _pLE_HP->SetColor(vec4(0.0f, 0.0f, 1.0f, 1));	//BLUE
+	else _pLE_HP->SetColor(vec4(1.0f, 0.0f, 0.0f, 1));							//RED
+
 	_mxBR = RotateZ(180.0f);	//for bullet rotate
 	_iBulletNum = 0;
 	CreateBulletList(RandomColor);	//隨機顏色 子彈
@@ -38,6 +65,7 @@ CLittleEnemy::CLittleEnemy(int RandomColor)
 
 CLittleEnemy::~CLittleEnemy()
 {
+	delete _pLE_HP;			//血條
 	DeleteBulletList();		//子彈
 }
 
@@ -61,10 +89,15 @@ void CLittleEnemy::UpdateMatrix(float delta)
 
 	//物件
 	_pMainBody->SetTRSMatrix(_mxMT * _mxTrack);
+
+	//HP BAR
+	_pLE_HP->GL_SetTranslatMatrix(_mxMT * _mxTrack * _mxHPT);
+	_pLE_HP->UpdateMatrix(delta);
 }
 void CLittleEnemy::GL_Draw()
 {
 	_pMainBody->Draw();
+	_pLE_HP->GL_Draw();
 
 	//子彈顯示
 	_pBGet = _pBHead;
@@ -85,6 +118,8 @@ void CLittleEnemy::GL_SetTRSMatrix(mat4 &mat)
 void CLittleEnemy::SetViewMatrix(mat4 mvx)
 {
 	_pMainBody->SetViewMatrix(mvx);
+	_pLE_HP->SetViewMatrix(mvx);
+
 	_pBGet = _pBHead;					//子彈串列
 	while (_pBGet != nullptr) {
 		_pBGet->SetViewMatrix(mvx);
@@ -94,6 +129,8 @@ void CLittleEnemy::SetViewMatrix(mat4 mvx)
 void CLittleEnemy::SetProjectionMatrix(mat4 mpx)
 {
 	_pMainBody->SetProjectionMatrix(mpx);
+	_pLE_HP->SetProjectionMatrix(mpx);
+
 	_pBGet = _pBHead;					//子彈串列
 	while (_pBGet != nullptr) {
 		_pBGet->SetProjectionMatrix(mpx);
@@ -217,4 +254,37 @@ void CLittleEnemy::NextBullet()
 			_iBulletNum++; //子彈數量紀錄
 		}
 	}
+}
+
+//-------------------------------------------------------
+void CLittleEnemy::AttackedByPlayer(float delta)
+{
+	_fHPMoveT_x -= delta * LOSE_HP_SPEED;	//基本失血速
+	if (_fHPMoveT_x < 0.5f)_fHPMoveS_x -= delta * (LOSE_HP_SPEED_SCALE + 0.05f); //縮放
+	else _fHPMoveS_x -= delta * LOSE_HP_SPEED_SCALE;
+
+	_mxHPT_adjust = Translate(_fHPMoveT_x, 0.0f, 0.0f) * Scale(_fHPMoveS_x, 1.0f, 1.0f);
+	_pLE_HP->GL_SetAdjustTranslatMatrix(_mxHPT_adjust);	//左移減血 + 收縮
+}
+
+void CLittleEnemy::SetColor(int RandomColor)
+{
+	//_pMainBody->SetColor(vColor);
+
+	//LE
+	if (RandomColor == 0) _pMainBody->SetColor(vec4(-1.0f, 0.0f, 0.0f, 1));		//隨機顏色
+	else if (RandomColor == 1) _pMainBody->SetColor(vec4(0.0f, -1.0f, 0.0f, 1));
+	else _pMainBody->SetColor(vec4(0.0f, 0.0f, -1.0f, 1));
+
+	//HP
+	if (RandomColor == 0) _pLE_HP->SetColor(vec4(1.0f, 1.0f, 0.0f, 1));			//YELLOW
+	else if (RandomColor == 1) _pLE_HP->SetColor(vec4(0.0f, 0.0f, 1.0f, 1));	//BLUE
+	else _pLE_HP->SetColor(vec4(1.0f, 0.0f, 0.0f, 1));							//RED
+}
+
+void CLittleEnemy::SetHPScaleMatrix(mat4 &mat)
+{
+	_fHPS[0] = mat._m[0][0];
+	_mxHPS = mat;
+	_pLE_HP->SetScaleMatrix(mat);
 }

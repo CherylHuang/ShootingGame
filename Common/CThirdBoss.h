@@ -43,5 +43,10 @@ public:
 	void ShootBullet(float delta);				//發射子彈
 	void NextBullet();							//下一顆子彈
 	void SetBulletPassiveMove();				//子彈未發射 跟隨角色
+
+	int _iLE_Num;									//小怪數量
+	bool _bLEisAlive[LITTLE_NUM];					//小怪存活中
+	float _fHPMoveS_x[LITTLE_NUM] = { 0 };			//小怪減血
+	void LE_AttackedByPlayer(float delta, int n);	//(第n隻)小怪受到攻擊
 };
 #endif

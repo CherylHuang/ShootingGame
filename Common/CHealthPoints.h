@@ -34,6 +34,7 @@ public:
 
 	mat4 GetTRSMatrix();							//取得血條位置
 	void SetColor(vec4 vColor);						//設定血條顏色
+	void SetScaleMatrix(mat4 &scale);				//設定縮放矩陣
 
 };
 #endif

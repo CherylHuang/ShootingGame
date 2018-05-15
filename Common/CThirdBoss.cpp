@@ -33,6 +33,7 @@ CThirdBoss::CThirdBoss()
 	}
 
 	//產生小怪
+	_iLE_Num = LITTLE_NUM;
 	for (int i = 0; i < LITTLE_NUM; i++) {
 		int RandomColor = rand() % 3;
 		_pLittleEnemy[i] = new CLittleEnemy(RandomColor);
@@ -41,6 +42,8 @@ CThirdBoss::CThirdBoss()
 		_fLT[i][1] = rand() % (HALF_SCREEN_Y - 2) + (rand() % 10)*0.1;		//y座標
 		_mxLT[i] = Translate(_fLT[i][0], _fLT[i][1], _fLT[i][2]);
 		_pLittleEnemy[i]->GL_SetTRSMatrix(_mxLT[i]);
+
+		_bLEisAlive[i] = true; //小怪存活中
 	}
 }
 
@@ -48,7 +51,9 @@ CThirdBoss::~CThirdBoss()
 {
 	DeleteBulletList();		//子彈
 	for (int i = 0; i < 2; i++) delete _pWheel[i];
-	for (int i = 0; i < LITTLE_NUM; i++) delete _pLittleEnemy[i];
+	for (int i = 0; i < LITTLE_NUM; i++) {
+		if(_pLittleEnemy[i] != nullptr) delete _pLittleEnemy[i];
+	}
 }
 
 //----------------------------------------------
@@ -68,11 +73,39 @@ void CThirdBoss::UpdateMatrix(float delta)
 	}
 
 	//Little Enemy
-	for (int i = 0; i < LITTLE_NUM; i++) _pLittleEnemy[i]->UpdateMatrix(delta);
+	_iLE_Num = (int)_bLEisAlive[0] + (int)_bLEisAlive[1] + (int)_bLEisAlive[2] + (int)_bLEisAlive[3];	//紀錄小怪存活數量
+	if (_iLE_Num == 0) {	//小怪全部死亡
+		for (int i = 0; i < LITTLE_NUM; i++) {
+			int RandomColor = rand() % 3;
+			_pLittleEnemy[i]->SetColor(RandomColor);		//重給顏色
+			_pLittleEnemy[i]->_fTrackSpeed = 0.5f + (rand() % 10) * 0.1f;		//隨機路徑速度
+			_fLT[i][0] = -HALF_SCREEN_X + 1.f + (rand() % (HALF_SCREEN_X * 2 - 2) + (rand() % 10)*0.1);	//x座標
+			_fLT[i][1] = rand() % (HALF_SCREEN_Y - 2) + (rand() % 10)*0.1;		//y座標
+			_mxLT[i] = Translate(_fLT[i][0], _fLT[i][1], _fLT[i][2]);
+			_pLittleEnemy[i]->GL_SetTRSMatrix(_mxLT[i]);
+			
+			_fHPMoveS_x[i] = 0;						//歸零
+			_pLittleEnemy[i]->_fHPMoveT_x = 0;		//歸零
+			_pLittleEnemy[i]->_fHPMoveS_x = 0.9f;	//重設基本縮放
+			_pLittleEnemy[i]->_mxHPT_adjust = Translate(_pLittleEnemy[i]->_fHPMoveT_x, 0.0f, 0.0f) * Scale(_pLittleEnemy[i]->_fHPMoveS_x, 1.0f, 1.0f);
+
+			_bLEisAlive[i] = true;	//復活
+		}
+		_iLE_Num = LITTLE_NUM;
+	}
+	else {					//尚有小怪存活 持續更新
+		for (int i = 0; i < LITTLE_NUM; i++) {
+			_pLittleEnemy[i]->UpdateMatrix(delta);
+		}
+	}
 }
 void CThirdBoss::GL_Draw()
 {
 	_pMainBody->Draw();
+	for (int i = 0; i < 2; i++) _pWheel[i]->DrawW();
+	for (int i = 0; i < LITTLE_NUM; i++) {
+		if (_bLEisAlive[i])_pLittleEnemy[i]->GL_Draw();
+	}
 
 	//子彈顯示
 	_pBGet = _pBHead;
@@ -80,9 +113,6 @@ void CThirdBoss::GL_Draw()
 		if (_pBGet->_isShoot) _pBGet->GL_Draw();		//只顯示射出的子彈
 		_pBGet = _pBGet->link;
 	}
-
-	for (int i = 0; i < 2; i++) _pWheel[i]->DrawW();
-	for (int i = 0; i < LITTLE_NUM; i++) _pLittleEnemy[i]->GL_Draw();
 }
 void CThirdBoss::SetViewMatrix(mat4 mvx)
 {
@@ -112,6 +142,7 @@ void CThirdBoss::CreateBulletList()
 {
 	//first node
 	_pBHead = new CBullet(_fMT[1]);
+	_pBHead->SetBulletColor(vec4(0.0f, 0.0f, -1.0f, 1));
 	_pBHead->link = nullptr;
 	_pBTail = _pBHead;
 	_pBHead_shoot = _pBHead;	//子彈發射用
@@ -127,6 +158,7 @@ void CThirdBoss::CreateBulletList()
 		if ((_pBGet = new CBullet(_fMT[1])) == NULL) {
 			printf("記憶體不足\n"); exit(0);
 		}
+		_pBGet->SetBulletColor(vec4(0.0f, 0.0f, -1.0f, 1));
 		_pBGet->link = nullptr;
 		_pBTail->link = _pBGet;
 		_pBTail = _pBGet;
@@ -197,4 +229,11 @@ mat4 CThirdBoss::GetLETranslateMatrix(int n)
 mat4 CThirdBoss::GetLEBulletTranslateMatrix(int n)
 {
 	return _pLittleEnemy[n]->GetBulletTranslateMatrix();
+}
+
+//---------------------------------------------------------------
+void CThirdBoss::LE_AttackedByPlayer(float delta, int n)
+{
+	_pLittleEnemy[n]->AttackedByPlayer(delta);
+	_fHPMoveS_x[n] = _pLittleEnemy[n]->_fHPMoveS_x;	//更新小怪減血
 }

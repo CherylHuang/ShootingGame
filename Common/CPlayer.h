@@ -34,6 +34,13 @@ protected:
 	float _fHPFS[3];
 	mat4 _mxHPFT, _mxHPFS;
 
+	//HP BAR
+	float _fHPMoveS_x;						//玩家減血
+	mat4 _mxHPT_adjust;
+	float _fHPT[3] = { 0 };					//for HP translation / scale
+	float _fHPS[3];
+	mat4 _mxHPT, _mxHPS;
+
 	//ATTACK
 	float _fAKT[3][3] = { 0 };				//for Attack Store Star translation / scale
 	float _fAKS[3][3];
@@ -43,14 +50,6 @@ protected:
 	float _fAKMT[3] = { 0 };				//for missile translation / scale
 	float _fMissileScale = 1;
 	mat4 _mxAKMT, _mxAKMS;
-
-	//HP BAR
-	float _fHPMoveS_x;						//玩家減血
-	mat4 _mxHPT_adjust;
-	float _fHPT[3] = { 0 };					//for HP translation / scale
-	float _fHPS[3];
-	mat4 _mxHPT, _mxHPS;
-	mat4 _mxHP_Pos;							//HP條實際位置
 
 	//DEFENSE
 	GLfloat _fDEAngle;						//防護罩 繞轉角
@@ -83,7 +82,7 @@ public:
 	void SetProjectionMatrix(mat4);
 	void UpdateMatrix(float);							//更新運動
 	float GetPlayerScale();
-	void SetPassiveMotion(float);						//血量條移動
+	void SetPassiveMotion(float);						//其他跟隨移動物件
 
 	int _iBulletNum;
 	void CreateBulletList();							//建立子彈串列

@@ -76,3 +76,11 @@ void CHealthPoints::SetColor(vec4 vColor)
 {
 	_pHP->SetColor(vColor);
 }
+
+void CHealthPoints::SetScaleMatrix(mat4 &scale)
+{
+	_fHPS[0] = scale._m[0][0];		//X
+	//_fHPS[1] = HP_Y_SCALE;	//Y
+	//_fHPS[2] = 1.0f;		//Z
+	_mxHPS = scale;	//ÁY©ñ
+}

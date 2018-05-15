@@ -25,7 +25,7 @@
 #define REOPEN_DEFENSE_TIME 10.0f
 #define BOSS_FULL_HP_X_SCALE 6.7f	//BOSS滿血時 x軸縮放
 
-int g_iLevel = 1;	//第幾個魔王
+int g_iLevel = 3;	//第幾個魔王
 
 // For Rotation
 GLfloat g_fYAngle = 0;  // Z軸的旋轉角度
@@ -158,14 +158,14 @@ void CollisionDetect(float delta)		//碰撞偵測
 			} 
 		
 			if (fPBullet_y > fBoss_y - 0.61f && /*fPBullet_y < fBoss_y + 0.81f &&*/
-				fPBullet_x < fBoss_x + 1.f && fPBullet_x > fBoss_x - 1.f) {			//玩家子彈碰撞BOSS1
+				fPBullet_x < fBoss_x + 1.f && fPBullet_x > fBoss_x - 1.f) {				//玩家子彈碰撞BOSS1
 				if (g_fBossHPT[0] > -3.33f) {
 					g_fBossHPT[0] -= delta;
 					g_mxBossHPT = Translate(g_fBossHPT[0], g_fBossHPT[1], g_fBossHPT[2]);
 					g_pBossHP->GL_SetTranslatMatrix(g_mxBossHPT);	//左移減血
 				}
 				else {
-					//g_iLevel++;	//下一關
+					g_iLevel++;	//下一關
 					g_pBossHP->SetColor(vec4(0.0f, 0.0f, 1.0f, 1));	//設定為BOSS1顏色(BULE)
 				}
 			}
@@ -228,11 +228,15 @@ void CollisionDetect(float delta)		//碰撞偵測
 			}
 			for (int i = 0; i < LITTLE_NUM; i++) {
 				if (fPBullet_y > fLE_y[i] - 0.5124f && fPBullet_x < fLE_x[i] + 0.436f && fPBullet_x > fLE_x[i] - 0.436f) {	//玩家子彈碰撞小怪
-					//printf("COLLISION!\n");
+					if(g_pThirdBoss->_bLEisAlive[i]) g_pThirdBoss->LE_AttackedByPlayer(delta, i);	//更新(第i隻)小怪血條
 				}
+				if (g_pThirdBoss->_fHPMoveS_x[i] < 0.0f) g_pThirdBoss->_bLEisAlive[i] = false; //小怪死亡
+
 				if (fLBullet_y[i] < PLAYER_Y_AXIS + 1.75f && fLBullet_y[i] > PLAYER_Y_AXIS - 1.75f &&
 					fLBullet_x[i] < g_fPTx + 2.f && fLBullet_x[i] > g_fPTx - 2.f) {						//小怪子彈碰撞玩家
-					//printf("COLLISION!\n");
+					if (!g_bisOpenDefense && g_pThirdBoss->_bLEisAlive[i]) {	//防護罩未開啟 + 小怪存活
+						g_pPlayer->AttackedByEnemies(delta);	//更新玩家血條
+					}
 				}
 			}
 		}
