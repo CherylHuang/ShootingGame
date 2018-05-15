@@ -32,12 +32,16 @@ CSecondBoss::CSecondBoss()
 		_mxSWS[i] = Scale(fSWscale, fSWscale, fSWscale);
 		_pSWheel[i]->SetTRSMatrix(_mxMT * _mxBWT[i] * _mxSWT[i] * _mxSWS[i] * _mxSWR[i]);
 	}
+
+	//產生子彈
+	CreateBulletList();
 }
 
 CSecondBoss::~CSecondBoss()
 {
 	for (int i = 0; i < BIG_WHEEL_NUM; i++) delete _pWheel[i]; //拿的時候一個一個拿->一個一個刪
 	for (int i = 0; i < SMALL_WHEEL_NUM; i++) delete _pSWheel[i];
+	DeleteBulletList();
 }
 
 //-------------------------------------------------------
@@ -101,6 +105,7 @@ void CSecondBoss::GL_Draw()
 	_pMainBody->Draw();
 	for (int i = 0; i < BIG_WHEEL_NUM; i++) _pWheel[i]->DrawW();
 	for (int i = 0; i < SMALL_WHEEL_NUM; i++) _pSWheel[i]->DrawW();
+	for (int i = 0; i < BULLET_NUM; i++) _bullet[i]->GL_Draw();
 }
 
 void CSecondBoss::SetViewMatrix(mat4 mvx)
@@ -108,6 +113,7 @@ void CSecondBoss::SetViewMatrix(mat4 mvx)
 	_pMainBody->SetViewMatrix(mvx);
 	for (int i = 0; i < BIG_WHEEL_NUM; i++) _pWheel[i]->SetViewMatrix(mvx);
 	for (int i = 0; i < SMALL_WHEEL_NUM; i++) _pSWheel[i]->SetViewMatrix(mvx);
+	for (int i = 0; i < BULLET_NUM; i++) _bullet[i]->SetViewMatrix(mvx);
 }
 
 void CSecondBoss::SetProjectionMatrix(mat4 mpx)
@@ -115,16 +121,29 @@ void CSecondBoss::SetProjectionMatrix(mat4 mpx)
 	_pMainBody->SetProjectionMatrix(mpx);
 	for (int i = 0; i < BIG_WHEEL_NUM; i++) _pWheel[i]->SetProjectionMatrix(mpx);
 	for (int i = 0; i < SMALL_WHEEL_NUM; i++) _pSWheel[i]->SetProjectionMatrix(mpx);
+	for (int i = 0; i < BULLET_NUM; i++) _bullet[i]->SetProjectionMatrix(mpx);
 }
 
 //-----------------------------------------------------------------
 void CSecondBoss::CreateBulletList()
 {
+	for (int i = 0; i < BULLET_NUM; i++) {
+		_bullet[i] = new CBullet(BOSS_Y);
+		_bullet[i]->SetBulletColor(vec4(0.0f, 0.0f, 1.0f, 1));
+		_mxBulletCircleT[i] = Translate(BULLET_RADIUS * cosf(M_PI*2.0f*i / BULLET_NUM), BULLET_RADIUS * sinf(M_PI*2.0f*i / BULLET_NUM), 0.0f);
+		_mxBulletCircleR[i] = RotateZ(-90.f + 360.f / BULLET_NUM*i);	//朝向外
+		_mxBT_Boss2[i] = _mxMT;
 
+		_faddDelta[i] = 0;
+		_fRand[i] = 0;
+	}
+	_fBAngle = 0;
+	_bDirectionDecide = false;
+	_bDir = 0;
 }
 void CSecondBoss::DeleteBulletList()
 {
-
+	for (int i = 0; i < BULLET_NUM; i++) delete _bullet[i];
 }
 void CSecondBoss::ShootBullet(float delta)
 {
@@ -136,5 +155,70 @@ void CSecondBoss::NextBullet()
 }
 void CSecondBoss::SetBulletPassiveMove()
 {
+	for (int i = 0; i < BULLET_NUM; i++) {
+		if (_bullet[i]->_isShoot == false) _bullet[i]->GL_SetTRSMatrix(_mxMT);
+	}
+}
 
+//----------------------------------------------------------
+void CSecondBoss::BulletMoveToCircle(float delta)
+{
+	for (int i = 0; i < BULLET_NUM; i++) {
+		_bullet[i]->_isShoot = true;	//子彈發射
+
+		//TRANSLATE
+		if (_mxBT_Boss2[i]._m[0][3] < _mxBulletCircleT[i]._m[0][3]) _mxBT_Boss2[i]._m[0][3] += delta * BULLET_SPEED;	//X
+		else _mxBT_Boss2[i]._m[0][3] -= delta * BULLET_SPEED;
+		if (_mxBT_Boss2[i]._m[1][3] < _mxBulletCircleT[i]._m[1][3]) _mxBT_Boss2[i]._m[1][3] += delta * BULLET_SPEED;	//Y
+		else _mxBT_Boss2[i]._m[1][3] -= delta * BULLET_SPEED;
+		_bullet[i]->GL_SetTRSMatrix(_mxMT * _mxBT_Boss2[i] * _mxBulletCircleR[i]);
+	}
+}
+void CSecondBoss::BulletRotate(float delta)
+{
+	_fBAngle += delta * 1200.f;
+	for (int i = 0; i < BULLET_NUM; i++) {
+		_mxBR_Boss2[i] = RotateZ(_fBAngle);
+		_bullet[i]->GL_SetTRSMatrix(_mxMT * _mxBulletCircleT[i] * _mxBR_Boss2[i] * _mxBulletCircleR[i]);
+
+		//--------下階段使用---------
+		_fRand[i] = (rand() % 2 + 1)*0.1f + (rand() % 10)*0.01f;	//1.0 ~ 2.9 之間 隨機速度
+		_mxBCurrentT[i] = _bullet[i]->GetTRSMatrix();			//取得子彈目前狀態
+	}
+}
+
+void CSecondBoss::BulletShootToPlayer(float delta, float player_x)
+{
+	for (int i = 0; i < BULLET_NUM; i++) {
+		_faddDelta[i] += delta * _fRand[i];
+		if (!_bDirectionDecide) {	//決定方向
+			if (_mxBT_Boss2[i]._m[0][3] < player_x) _bDir = 0; 
+			else _bDir = 1;
+			_bDirectionDecide = true;
+		}
+
+		if (player_x > 2.5f || player_x < -2.5) _fAdjust_x = 1.0;			//微調發射角
+		else if (player_x < 0.5 && player_x > -0.5) _fAdjust_x = 0.0f;
+		else _fAdjust_x = 0.5;
+
+		if (!_bDir)_mxBT_Boss2[i]._m[0][3] += _faddDelta[i] * _fAdjust_x;	//X
+		else _mxBT_Boss2[i]._m[0][3] -= _faddDelta[i] * _fAdjust_x;
+		_mxBT_Boss2[i]._m[1][3] -= _faddDelta[i];	//Y
+		
+		_bullet[i]->GL_SetTRSMatrix(_mxBT_Boss2[i] * _mxBCurrentT[i]);
+	}
+}
+
+void CSecondBoss::ReSetBullet()
+{
+	for (int i = 0; i < BULLET_NUM; i++) {
+		_bullet[i]->_isShoot = false;	//尚未發射
+		_mxBT_Boss2[i] = _mxMT;			//子彈在玩家位置
+		_bDirectionDecide = false;		//重設，第三階段使用
+		_faddDelta[i] = 0;
+		_fRand[i] = 0;
+	}
+	_fBAngle = 0;
+	_bDirectionDecide = false;
+	_bDir = 0;
 }

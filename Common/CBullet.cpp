@@ -52,6 +52,9 @@ void CBullet::GL_Draw()
 
 void CBullet::GL_SetTRSMatrix(mat4 &mat)
 {
+	_fBT[0] = mat._m[0][3];
+	_fBT[1] = mat._m[1][3];
+	_mxBT = Translate(_fBT[0], _fBT[1], _fBT[2]);
 	_pBullet->SetTRSMatrix(mat);
 }
 
@@ -132,4 +135,9 @@ void CBullet::SetBulletColor(vec4 vColor)
 mat4 CBullet::GetTranslateMatrix()
 {
 	return _mxBT;
+}
+
+mat4 CBullet::GetTRSMatrix()
+{
+	return(_pBullet->GetTRSMatrix());
 }

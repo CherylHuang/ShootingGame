@@ -38,5 +38,6 @@ public:
 	void SetBulletColor(vec4);										//設定子彈顏色
 
 	mat4 GetTranslateMatrix();
+	mat4 GetTRSMatrix();
 };
 #endif

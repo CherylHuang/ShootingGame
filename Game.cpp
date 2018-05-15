@@ -25,7 +25,7 @@
 #define REOPEN_DEFENSE_TIME 10.0f
 #define BOSS_FULL_HP_X_SCALE 6.7f	//BOSS滿血時 x軸縮放
 
-int g_iLevel = 3;	//第幾個魔王
+int g_iLevel = 1;	//第幾個魔王
 
 // For Rotation
 GLfloat g_fYAngle = 0;  // Z軸的旋轉角度
@@ -54,7 +54,11 @@ float g_fDefenseCount;	//防護罩計時
 // Counting
 float g_fcount = 0;
 float g_fcount_boss1 = 0;
+float g_fcount_boss2 = 0;
 float g_fcount_boss3 = 0;
+
+//BOSS 2
+float g_PCurrent_x;
 
 // Delay Time
 float g_NextBulletDelay_Boss3 = 1.3f;
@@ -119,6 +123,9 @@ void init(void)
 	g_bCanOpenDefense = true;
 	g_bisOpenDefense = false;
 	g_fDefenseCount = 0;
+
+	//BOSS 2
+	g_PCurrent_x = 0;
 }
 
 void CollisionDetect(float delta)		//碰撞偵測
@@ -224,7 +231,6 @@ void CollisionDetect(float delta)		//碰撞偵測
 					g_mxBossHPT = Translate(g_fBossHPT[0], g_fBossHPT[1], g_fBossHPT[2]);
 					g_pBossHP->GL_SetTranslatMatrix(g_mxBossHPT);	//左移減血
 				}
-				else g_iLevel = 0;	//-------------遊戲結束--------------
 			}
 			for (int i = 0; i < LITTLE_NUM; i++) {
 				if (fPBullet_y > fLE_y[i] - 0.5124f && fPBullet_x < fLE_x[i] + 0.436f && fPBullet_x > fLE_x[i] - 0.436f) {	//玩家子彈碰撞小怪
@@ -251,6 +257,9 @@ void CollisionDetect(float delta)		//碰撞偵測
 			}
 		}
 	}
+
+	//-----BOSS死亡-----
+	if (g_fBossHPT[0] < -10.f) g_iLevel = 0;	//遊戲結束
 
 	//-----玩家死亡-----
 	if (g_pPlayer->_fHPMoveT_x < -0.51f) {
@@ -298,6 +307,7 @@ void onFrameMove(float delta)
 		}
 		else g_fcount = 0;			//蓄力完重新計數
 	}
+
 	//BOSS1子彈
 	g_fcount_boss1 += delta;
 	g_pFirstBoss->SetBulletPassiveMove();	//未發射子彈跟隨BOSS1
@@ -306,6 +316,28 @@ void onFrameMove(float delta)
 		g_pFirstBoss->NextBullet();	//下一個子彈
 		g_fcount_boss1 -= NEXT_BULLET_DELAY;
 	}
+
+	//BOSS2子彈
+	g_fcount_boss2 += delta;
+	g_pSecondBoss->SetBulletPassiveMove();
+	if (g_fcount_boss2 < 0.8f) {
+		g_pSecondBoss->BulletMoveToCircle(delta);					//射出
+	}
+	else if (g_fcount_boss2 >= 0.8f && g_fcount_boss2 < 4.f) {
+		g_pSecondBoss->BulletRotate(delta);							//轉圈(預備時間)
+		g_PCurrent_x = g_fPTx;
+	}
+	else if (g_fcount_boss2 >= 4.0f && g_fcount_boss2 < 6.f) {
+		g_pSecondBoss->BulletShootToPlayer(delta, g_PCurrent_x);	//發射(向玩家)
+	}
+	else if (g_fcount_boss2 >= 6.0f && g_fcount_boss2 < 7.f) {
+		g_pSecondBoss->ReSetBullet();								//重置
+	}
+	else {
+		g_fcount_boss2 -= 7.0f;	//重新計時
+	}
+
+
 	//BOSS3 + Little 子彈
 	g_fcount_boss3 += delta;
 	g_pThirdBoss->SetBulletPassiveMove();	//未發射子彈跟隨little

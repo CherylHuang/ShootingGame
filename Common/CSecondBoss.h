@@ -12,6 +12,8 @@
 #define SW_RADIUS 0.5f		//小輪  距離半徑
 #define BOSS_Y 2			//BOSS1 y axis
 #define BULLET_NUM 10		//子彈數量
+#define BULLET_RADIUS 1.5f	//子彈射出半徑
+#define BULLET_SPEED 8.f
 
 class CSecondBoss : public CEnemy
 {
@@ -29,7 +31,17 @@ protected:
 	GLfloat _fSWAngle = 0;			//小輪自轉角度
 
 	// bullet
-	//CBullet *_bullet[BULLET_NUM];
+	CBullet *_bullet[BULLET_NUM];
+	float _fBAngle;	//旋轉角
+	float _fmxBT_Boss2[BULLET_NUM][3];
+	mat4 _mxBT_Boss2[BULLET_NUM], _mxBR_Boss2[BULLET_NUM];	//bullet TRS matrix
+	mat4 _mxBulletCircleT[BULLET_NUM], _mxBulletCircleR[BULLET_NUM];
+	float _faddDelta[BULLET_NUM];			//累加delta用
+	float _fRand[BULLET_NUM];				//隨機發射速度(第三階段)
+	float _fAdjust_x;						//發射方向調整
+	bool _bDirectionDecide;					//決定發射方向
+	bool _bDir;								//發射方向, 0:R, 1:L
+	mat4 _mxBCurrentT[BULLET_NUM];			//存取目前子彈位置
 
 public:
 
@@ -47,5 +59,10 @@ public:
 	void NextBullet();							//下一顆子彈
 	void SetBulletPassiveMove();				//子彈未發射 跟隨角色
 
+	//子彈三階段發射
+	void BulletMoveToCircle(float delta);
+	void BulletRotate(float delta);
+	void BulletShootToPlayer(float delta, float player_x);
+	void ReSetBullet();
 };
 #endif
