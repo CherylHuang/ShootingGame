@@ -10,8 +10,7 @@ CFirstBoss::CFirstBoss()
 	_mxMT = Translate(_fMT[0], _fMT[1], _fMT[2]);
 	_pMainBody->SetTRSMatrix(_mxMT);
 
-	float BigShootScale = 5.0f;
-	_mxBS = Scale(BigShootScale, BigShootScale, BigShootScale);	//for first big shoot
+	_mxBS = Scale(BIG_BULLET_SCALE, BIG_BULLET_SCALE, BIG_BULLET_SCALE);	//for first big shoot
 	_mxBR = RotateZ(180.0f);	//for bullet rotate
 	_iBulletNum = 0;
 	_isFirstBigShoot = false;

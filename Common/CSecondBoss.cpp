@@ -2,6 +2,8 @@
 
 CSecondBoss::CSecondBoss()
 {
+	_mxBT = Translate(0.0f, 0.0f, 0.0f);////////////////////////////初始化子彈位置
+
 	//產生Obj檔實體物件
 	_pMainBody = new CObjReader("obj/cyberpunk2.obj");
 	_pMainBody->SetColor(vec4(0.0f, -1.0f, 0.0f, 1));

@@ -6,8 +6,9 @@
 #include "CEnemy.h"
 #include "CBullet.h"
 
-#define BOSS_Y 3		//BOSS1 y axis
-#define BULLET_NUM 10	//子彈數量
+#define BOSS_Y 3				//BOSS1 y axis
+#define BULLET_NUM 10			//子彈數量
+#define BIG_BULLET_SCALE 5.0f	//大子彈 縮放大小
 
 class CFirstBoss : public CEnemy
 {

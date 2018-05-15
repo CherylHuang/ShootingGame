@@ -10,6 +10,7 @@
 #include "Common/CFirstBoss.h"
 #include "Common/CSecondBoss.h"
 #include "Common/CThirdBoss.h"
+#include "Common/CHealthPoints.h"
 
 #define SPACE_KEY 32
 #define SCREEN_SIZE_X 500
@@ -22,8 +23,9 @@
 #define NEXT_BULLET_DELAY_BOSS3 1.3f
 #define DEFENSE_TIME 5.0f
 #define REOPEN_DEFENSE_TIME 10.0f
+#define BOSS_FULL_HP_X_SCALE 6.7f	//BOSS滿血時 x軸縮放
 
-int g_iLevel = 3;	//第幾個魔王
+int g_iLevel = 1;	//第幾個魔王
 
 // For Rotation
 GLfloat g_fYAngle = 0;  // Z軸的旋轉角度
@@ -36,6 +38,7 @@ CPlayer *g_pPlayer;
 CFirstBoss *g_pFirstBoss;
 CSecondBoss *g_pSecondBoss;
 CThirdBoss *g_pThirdBoss;
+CHealthPoints *g_pBossHP;
 
 // Player Attack
 bool g_bStoringAttack;		//蓄力中
@@ -61,10 +64,19 @@ float g_fPTx;		//玩家移動x軸
 mat4 g_mxPT;		//玩家座標(g_fPTx, PLAYER_Y_AXIS, 0, 1)
 mat4 g_mxPS;		//戰鬥機大小
 
+// Boss HP
+float g_fBossHPT[3] = { 0.0f, 6.95f , 0.0f };						//初始高度
+mat4 g_mxBossHPT;
+
+// Player HP
+bool g_PlayerIsAlive;	//玩家尚未死亡
+mat4 g_mxPlayerHPT;		//玩家血條位置
+
+
 //----------------------------------------------------------------------------
 // 函式的原型宣告
 extern void IdleProcess();
-void CollisionDetect();		//碰撞偵測
+void CollisionDetect(float delta);		//碰撞偵測
 
 void init(void)
 {
@@ -82,13 +94,21 @@ void init(void)
 	camera->updateOrthographic(-5.0f, 5.0f, -7.0f, 7.0f, 1.0f, 100.0f);
 	//--------------------------------------------------------------------
 
-	g_pStars = new CBGStars;					//背景
-	g_pPlayer = new CPlayer;					//玩家
-	g_pFirstBoss = new CFirstBoss;				//BOSS1
-	g_pSecondBoss = new CSecondBoss;			//BOSS2
-	g_pThirdBoss = new CThirdBoss;				//BOSS3
+	g_pStars = new CBGStars;			//背景
+	g_pPlayer = new CPlayer;			//玩家
+	g_pFirstBoss = new CFirstBoss;		//BOSS1
+	g_pSecondBoss = new CSecondBoss;	//BOSS2
+	g_pThirdBoss = new CThirdBoss;		//BOSS3
+	g_pBossHP = new CHealthPoints(g_fBossHPT[1], BOSS_FULL_HP_X_SCALE);		//BOSS血條(最上方)
+	g_pBossHP->SetColor(vec4(1.0f, 1.0f, 0.0f, 1));	//設定為BOSS1顏色(YELLOW)
 
 	//-------------------------------------------------------------------
+	//PLAYER HP
+	g_PlayerIsAlive = true;
+
+	//BOSS HP BAR
+	g_mxBossHPT = Translate(g_fBossHPT[0], g_fBossHPT[1], g_fBossHPT[2]);
+
 	//ATTACK
 	g_bStoringAttack = false;
 	g_iAttackStarNum = 0;	//攻擊蓄力星星
@@ -101,7 +121,7 @@ void init(void)
 	g_fDefenseCount = 0;
 }
 
-void CollisionDetect()		//碰撞偵測
+void CollisionDetect(float delta)		//碰撞偵測
 {
 	mat4 mxPlayerPos, mxPBulletPos, mxBossPos, mxBBulletPos;
 	float fPlayer_x, fPlayer_y;			//player position
@@ -129,20 +149,52 @@ void CollisionDetect()		//碰撞偵測
 			fBBullet_y = mxBBulletPos._m[1][3];
 			
 			if (isFirstBullet) {	//第一發子彈
-				if (fBBullet_y - 0.15f < PLAYER_Y_AXIS + 1.75f && 
-					fBBullet_x - 0.5f < g_fPTx + 2.f && 
-					fBBullet_x + 0.5f > g_fPTx - 2.f) {					//BOSS 大子彈 碰撞玩家
-					if (!g_bisOpenDefense) {							//防護罩未開啟
-						//printf("COLLISION!\n");
+				if (fBBullet_y - 0.15f < PLAYER_Y_AXIS + 1.75f && fBBullet_y > PLAYER_Y_AXIS - 1.75f &&
+					fBBullet_x - 0.5f < g_fPTx + 2.f && fBBullet_x + 0.5f > g_fPTx - 2.f) {				//BOSS 大子彈 碰撞玩家
+					if (!g_bisOpenDefense) {	//防護罩未開啟
+						g_pPlayer->AttackedByEnemies(delta, BIG_BULLET_SCALE);	//更新玩家血條
 					}
 				}
 			} 
 		
-			if (fPBullet_y > fBoss_y - 0.61f && fPBullet_x < fBoss_x + 1.f && fPBullet_x > fBoss_x - 1.f) {	//玩家子彈碰撞BOSS1
-				//printf("COLLISION!\n");
+			if (fPBullet_y > fBoss_y - 0.61f && /*fPBullet_y < fBoss_y + 0.81f &&*/
+				fPBullet_x < fBoss_x + 1.f && fPBullet_x > fBoss_x - 1.f) {			//玩家子彈碰撞BOSS1
+				if (g_fBossHPT[0] > -3.33f) {
+					g_fBossHPT[0] -= delta;
+					g_mxBossHPT = Translate(g_fBossHPT[0], g_fBossHPT[1], g_fBossHPT[2]);
+					g_pBossHP->GL_SetTranslatMatrix(g_mxBossHPT);	//左移減血
+				}
+				else {
+					//g_iLevel++;	//下一關
+					g_pBossHP->SetColor(vec4(0.0f, 0.0f, 1.0f, 1));	//設定為BOSS1顏色(BULE)
+				}
 			}
 		}
 	} //--------Level1
+
+	else if (g_iLevel == 2) {		//BOSS2
+		if (g_pSecondBoss) {		//BOSS2存在
+			mxBossPos = g_pSecondBoss->GetTranslateMatrix();				//取得BOSS位置
+			fBoss_x = mxBossPos._m[0][3];
+			fBoss_y = mxBossPos._m[1][3];
+			mxBBulletPos = g_pSecondBoss->GetBulletTranslateMatrix();		//取得BOSS子彈位置
+			fBBullet_x = mxBBulletPos._m[0][3];
+			fBBullet_y = mxBBulletPos._m[1][3];
+
+			if (fPBullet_y > fBoss_y - 0.89f && fPBullet_y < fBoss_y + 0.89f &&
+				fPBullet_x < fBoss_x + 1.527f && fPBullet_x > fBoss_x - 1.527f) {		//玩家子彈碰撞BOSS2
+				if (g_fBossHPT[0] > -6.66f) {
+					g_fBossHPT[0] -= delta;
+					g_mxBossHPT = Translate(g_fBossHPT[0], g_fBossHPT[1], g_fBossHPT[2]);
+					g_pBossHP->GL_SetTranslatMatrix(g_mxBossHPT);	//左移減血
+				}
+				else {
+					g_iLevel++;	//下一關
+					g_pBossHP->SetColor(vec4(1.0f, 0.0f, 0.0f, 1));	//設定為BOSS3顏色(RED)
+				}
+			}
+		}
+	} //--------Level2
 
 	else if (g_iLevel == 3) {		//BOSS3
 		if (g_pThirdBoss) {			//BOSS3存在
@@ -165,8 +217,14 @@ void CollisionDetect()		//碰撞偵測
 				fLBullet_y[i] = mxLBulletPos[i]._m[1][3];
 			}
 			//printf("%f, %f\n", fBBullet_x, fBBullet_y);
-			if (fPBullet_y > fBoss_y - 1.296f && fPBullet_x < fBoss_x + 2.269f && fPBullet_x > fBoss_x - 2.195f) {	//玩家子彈碰撞BOSS3
-				//printf("COLLISION!\n");
+			if (fPBullet_y > fBoss_y - 1.296f && fPBullet_y < fBoss_y + 1.247f &&
+				fPBullet_x < fBoss_x + 2.269f && fPBullet_x > fBoss_x - 2.195f) {	//玩家子彈碰撞BOSS3
+				if (g_fBossHPT[0] > -10.f) {
+					g_fBossHPT[0] -= delta;
+					g_mxBossHPT = Translate(g_fBossHPT[0], g_fBossHPT[1], g_fBossHPT[2]);
+					g_pBossHP->GL_SetTranslatMatrix(g_mxBossHPT);	//左移減血
+				}
+				else g_iLevel = 0;	//-------------遊戲結束--------------
 			}
 			for (int i = 0; i < LITTLE_NUM; i++) {
 				if (fPBullet_y > fLE_y[i] - 0.5124f && fPBullet_x < fLE_x[i] + 0.436f && fPBullet_x > fLE_x[i] - 0.436f) {	//玩家子彈碰撞小怪
@@ -180,15 +238,20 @@ void CollisionDetect()		//碰撞偵測
 		}
 	} //--------Level3
 
-	  //BOSS一般子彈碰撞玩家
-	if (fBBullet_y < PLAYER_Y_AXIS + 1.75f && fBBullet_y > PLAYER_Y_AXIS - 1.75f &&
-		fBBullet_x < g_fPTx + 2.f && fBBullet_x > g_fPTx - 2.f) {
-		if (!g_bisOpenDefense) {	//防護罩未開啟
-			//printf("COLLISION!\n");
+	//-----BOSS一般子彈碰撞玩家-----
+	if (g_iLevel != 0) {	//BOSS1 or BOSS2 or BOSS3 exist
+		if (fBBullet_y < PLAYER_Y_AXIS + 1.75f && fBBullet_y > PLAYER_Y_AXIS - 1.75f &&
+			fBBullet_x < g_fPTx + 2.f && fBBullet_x > g_fPTx - 2.f) {
+			if (!g_bisOpenDefense) {	//防護罩未開啟
+				g_pPlayer->AttackedByEnemies(delta);	//更新玩家血條
+			}
 		}
-		//else printf("NO COLLISION!\n");
 	}
 
+	//-----玩家死亡-----
+	if (g_pPlayer->_fHPMoveT_x < -0.51f) {
+		g_PlayerIsAlive = false;
+	}
 }
 
 //----------------------------------------------------------------------------
@@ -197,15 +260,19 @@ void GL_Display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the window 清顏色, 將深度清為1
 
-	g_pStars->GL_Draw();								//背景
-	g_pPlayer->GL_Draw();
-	if (g_bisOpenDefense) g_pPlayer->GL_DrawDefense();	//防護罩顯示
-	g_pPlayer->GL_DrawAttack(g_iAttackStarNum);			//攻擊蓄力顯示
+	g_pStars->GL_Draw();	//背景
+
+	if (g_PlayerIsAlive) {
+		g_pPlayer->GL_Draw();								//玩家顯示
+		if (g_bisOpenDefense) g_pPlayer->GL_DrawDefense();	//防護罩顯示
+		g_pPlayer->GL_DrawAttack(g_iAttackStarNum);			//攻擊蓄力顯示
+	}
 
 	//BOSS
 	if (g_iLevel == 1) g_pFirstBoss->GL_Draw();
 	if (g_iLevel == 2) g_pSecondBoss->GL_Draw();
 	if (g_iLevel == 3) g_pThirdBoss->GL_Draw();
+	g_pBossHP->GL_Draw();		//血條
 
 	glutSwapBuffers();	// 交換 Frame Buffer
 }
@@ -267,7 +334,14 @@ void onFrameMove(float delta)
 		if (g_iLevel == 2) mxBossPos = g_pSecondBoss->GetTranslateMatrix();
 		if (g_iLevel == 3) mxBossPos = g_pThirdBoss->GetTranslateMatrix();
 		g_pPlayer->ShootMissile(delta, g_fPTx, mxBossPos, g_iAttackStarNum);	//根據蓄力量，發射導彈至BOSS位置
-		if (g_pPlayer->_bMissileIsShoot == false) g_bMissileShoot = false;		//導彈發射完成
+		if (g_pPlayer->_bMissileIsShoot == false) {
+			g_bMissileShoot = false;		//導彈發射完成
+			if (g_iAttackStarNum == 1) g_fBossHPT[0] -= 0.2f;		//一顆星
+			else if (g_iAttackStarNum == 2) g_fBossHPT[0] -= 0.4f;	//兩顆星
+			else g_fBossHPT[0] -= 0.6f;								//三顆星
+			g_mxBossHPT = Translate(g_fBossHPT[0], g_fBossHPT[1], g_fBossHPT[2]);
+			g_pBossHP->GL_SetTranslatMatrix(g_mxBossHPT);	//左移 BOSS減血
+		}
 		g_fAttackCount = 0;
 		g_iAttackStarNum = 0;
 	}
@@ -296,8 +370,9 @@ void onFrameMove(float delta)
 	g_pFirstBoss->UpdateMatrix(delta);						//BOSS1
 	g_pSecondBoss->UpdateMatrix(delta);						//BOSS2 子物件運動
 	g_pThirdBoss->UpdateMatrix(delta);						//BOSS3
+	g_pBossHP->UpdateMatrix(delta);							//BOSS血條
 
-	CollisionDetect();										//碰撞偵測
+	CollisionDetect(delta);									//碰撞偵測
 
 	//----------------------------
 	// 由上層更新所有要被繪製物件的 View 與 Projection Matrix
@@ -308,6 +383,7 @@ void onFrameMove(float delta)
 		g_pFirstBoss->SetViewMatrix(mvx);
 		g_pSecondBoss->SetViewMatrix(mvx);
 		g_pThirdBoss->SetViewMatrix(mvx);
+		g_pBossHP->SetViewMatrix(mvx);
 	}
 	mpx = camera->getProjectionMatrix(bPDirty);
 	if (bPDirty) { // 更新所有物件的 View Matrix
@@ -316,6 +392,7 @@ void onFrameMove(float delta)
 		g_pFirstBoss->SetProjectionMatrix(mpx);
 		g_pSecondBoss->SetProjectionMatrix(mpx);
 		g_pThirdBoss->SetProjectionMatrix(mpx);
+		g_pBossHP->SetProjectionMatrix(mpx);
 	}
 
 	GL_Display();
@@ -386,11 +463,12 @@ void Win_Keyboard(unsigned char key, int x, int y)
 		glutIdleFunc(NULL);
 
 		//--------資源釋放---------
-		delete g_pStars;		//背景
-		delete g_pPlayer;		//玩家
-		delete g_pFirstBoss;	//BOSS1
-		delete g_pSecondBoss;	//BOSS2
-		delete g_pThirdBoss;	//BOSS3
+		if (g_pStars != nullptr) delete g_pStars;		//背景
+		if (g_pPlayer != nullptr) delete g_pPlayer;		//玩家
+		if (g_pFirstBoss != nullptr) delete g_pFirstBoss;	//BOSS1
+		if (g_pSecondBoss != nullptr) delete g_pSecondBoss;	//BOSS2
+		if (g_pThirdBoss != nullptr) delete g_pThirdBoss;	//BOSS3
+		if (g_pBossHP != nullptr) delete g_pBossHP;		//BOSS血條
 		camera->destroyInstance();
 
 		exit(EXIT_SUCCESS);
@@ -399,24 +477,15 @@ void Win_Keyboard(unsigned char key, int x, int y)
 }
 
 void Win_SpecialKeyboard(int key, int x, int y) {
-	mat4 ry, mxT;
-	vec4 vT;
 	if (!m_bAutoMove) { // 沒有自動旋轉下才有作用
 		switch (key) {
 		case GLUT_KEY_LEFT:		// 目前按下的是向左方向鍵
-			g_fYAngle -= 2.0;		// 逆時針為正方向
 			break;
 		case GLUT_KEY_RIGHT:	// 目前按下的是向右方向鍵
-			g_fYAngle += 2.0;		// 順時針為負方向
 			break;
 		default:
 			break;
 		}
-
-		// 計算旋轉矩陣並更新到 Shader 中
-		ry = RotateY(g_fYAngle); //  degree 
-
-								 //		glutPostRedisplay();  
 	}
 }
 //----------------------------------------------------------------------------

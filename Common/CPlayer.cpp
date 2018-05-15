@@ -14,7 +14,7 @@ CPlayer::CPlayer()
 	_mxPS = Scale(_fPlayerScale, _fPlayerScale, _fPlayerScale);
 	_pPlayer->SetTRSMatrix(_mxPT * _mxPS);
 
-	//BLOOD FRAME
+	//HP FRAME
 	_pHPFrame = new CObjReader("obj/square.obj");
 	_pHPFrame->SetShader();
 	_fHPFT[1] = -21.f;		//jet下方
@@ -22,6 +22,17 @@ CPlayer::CPlayer()
 	_fHPFS[0] = 10.f; _fHPFS[1] = 2.f; _fHPFS[2] = 1.f;
 	_mxHPFS = Scale(_fHPFS[0], _fHPFS[1], _fHPFS[2]);	//縮放
 	_pHPFrame->SetTRSMatrix(_mxHPFS * _mxHPFT);
+
+	//HP BAR
+	_fHPMoveT_x = 0;		//調整移動
+	_fHPMoveS_x = 0.9f;		//基本縮放
+	_fHPS[0] = 0.65f;		//X軸縮放
+	_fHPS[1] = HP_Y_SCALE;	//Y
+	_fHPS[2] = 1.0f;		//Z
+	_mxHPS = Scale(_fHPS[0], _fHPS[1], _fHPS[2]);			//縮放matrix
+	_fHPT[1] = _fPT[1] - 1.f;
+	_mxHPT = Translate(_fHPT[0], _fHPT[1], _fHPT[2]);		//位移Matrix
+	_pPlayerHP = new CHealthPoints(_fHPT[1], _fHPS[0]);		//玩家血條
 
 	//ATTACK SOTRE STAR
 	float fAKscale = 0.6f;
@@ -66,6 +77,7 @@ CPlayer::~CPlayer()
 {
 	delete _pPlayer;
 	delete _pHPFrame;
+	delete _pPlayerHP;
 	for (int i = 0; i < DEFENSE_NUM; i++) delete _pDefense[i];
 	for (int i = 0; i < 3; i++) delete _pAttackStroeStar[i];
 	delete _pAttackMissile;	//導彈
@@ -77,6 +89,7 @@ void CPlayer::GL_Draw()
 {
 	_pPlayer->Draw();
 	_pHPFrame->DrawW();
+	_pPlayerHP->GL_Draw();
 	if(_bMissileIsShoot) _pAttackMissile->Draw();	//導彈發射中才顯示
 
 	//子彈顯示
@@ -115,6 +128,7 @@ void CPlayer::SetViewMatrix(mat4 mvx)
 {
 	_pPlayer->SetViewMatrix(mvx);			//玩家
 	_pHPFrame->SetViewMatrix(mvx);			//血量框
+	_pPlayerHP->SetViewMatrix(mvx);			//HP BAR
 	for (int i = 0; i < DEFENSE_NUM; i++) _pDefense[i]->SetViewMatrix(mvx);
 	for (int i = 0; i < 3; i++) _pAttackStroeStar[i]->SetViewMatrix(mvx);
 	_pAttackMissile->SetViewMatrix(mvx);	//導彈
@@ -130,6 +144,7 @@ void CPlayer::SetProjectionMatrix(mat4 mpx)
 {
 	_pPlayer->SetProjectionMatrix(mpx);			//玩家
 	_pHPFrame->SetViewMatrix(mpx);				//血量框
+	_pPlayerHP->SetProjectionMatrix(mpx);		//HP BAR
 	for (int i = 0; i < DEFENSE_NUM; i++) _pDefense[i]->SetProjectionMatrix(mpx);
 	for (int i = 0; i < 3; i++) _pAttackStroeStar[i]->SetProjectionMatrix(mpx);
 	_pAttackMissile->SetProjectionMatrix(mpx);	//導彈
@@ -153,14 +168,23 @@ void CPlayer::UpdateMatrix(float delta)
 		mxDER[i] = RotateZ(_fDEAngle);
 		_pDefense[i]->SetTRSMatrix(_mxPT * mxDER[i] * _mxDET[i] * _mxDES[i] * _mxDER[i]);
 	}
+
+	//------------
+	_pPlayerHP->UpdateMatrix(delta);			//更新血條
+	_mxHP_Pos = _pPlayerHP->GetTRSMatrix();		//取得血條位置
 }
 
 void CPlayer::SetPassiveMotion(float x)
 {
-	//血量條
+	//血量框
 	_fHPFT[0] = x / 2.f;
 	_mxHPFT = Translate(_fHPFT[0], _fHPFT[1], _fHPFT[2]);
 	_pHPFrame->SetTRSMatrix(_mxHPFS * _mxHPFT);
+
+	//HP BAR
+	_fHPT[0] = x;
+	_mxHPT = Translate(_fHPT[0], _fHPT[1], _fHPT[2]);
+	_pPlayerHP->GL_SetTranslatMatrix(_mxHPT);
 
 	//ATTACK STORE STAR
 	for (int i = 0; i < 3; i++) {
@@ -306,4 +330,30 @@ mat4 CPlayer::GetTranslateMatrix()
 mat4 CPlayer::GetBulletTranslateMatrix()
 {
 	return _mxBT;
+}
+
+//----------------------------------------------
+mat4 CPlayer::GetTRSMatrix_HP()
+{
+	return(_mxHP_Pos);
+}
+
+void CPlayer::AttackedByEnemies(float delta)
+{
+	_fHPMoveT_x -= delta * LOSE_HP_SPEED;	//基本失血速
+	if(_fHPMoveT_x < 0.5f)_fHPMoveS_x -= delta * (LOSE_HP_SPEED_SCALE + 0.05f); //縮放
+	else _fHPMoveS_x -= delta * LOSE_HP_SPEED_SCALE;
+
+	_mxHPT_adjust = Translate(_fHPMoveT_x, 0.0f, 0.0f) * Scale(_fHPMoveS_x, 1.0f, 1.0f);
+	_pPlayerHP->GL_SetAdjustTranslatMatrix(_mxHPT_adjust);	//左移減血 + 收縮
+}
+
+void CPlayer::AttackedByEnemies(float delta, float loseHPscale)
+{
+	_fHPMoveT_x -= (delta * LOSE_HP_SPEED) * loseHPscale;	//基本失血速乘上失血倍率
+	if (_fHPMoveT_x < 0.5f)_fHPMoveS_x -= (delta * (LOSE_HP_SPEED_SCALE + 0.05f)) * loseHPscale;	//縮放
+	else _fHPMoveS_x -= (delta * LOSE_HP_SPEED_SCALE) * loseHPscale;
+
+	_mxHPT_adjust = Translate(_fHPMoveT_x, 0.0f, 0.0f) * Scale(_fHPMoveS_x, 1.0f, 1.0f);
+	_pPlayerHP->GL_SetAdjustTranslatMatrix(_mxHPT_adjust);	//左移減血 + 收縮
 }

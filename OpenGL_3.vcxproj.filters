@@ -90,6 +90,9 @@
     <ClCompile Include="Common\CLittleEnemy.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="Common\CHealthPoints.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\CQuad.h">
@@ -150,6 +153,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Common\CLittleEnemy.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CHealthPoints.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
